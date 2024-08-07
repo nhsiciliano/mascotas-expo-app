@@ -1,48 +1,50 @@
-import { Stack, useRouter } from 'expo-router'
+import { Stack } from 'expo-router'
 import '../global.css'
-import { AuthProvider, useAuth } from '../context/AuthContext'
-import { useEffect } from 'react'
-import { supabase } from '../lib/supabase'
-import { getUserData } from '../services/userService'
+import * as SecureStore from 'expo-secure-store'
+import { ClerkProvider } from '@clerk/clerk-expo'
 
-export default function _layout() {
-    return (
-        <AuthProvider>
-            <MainLayout />
-        </AuthProvider>
+const tokenCache = {
+    async getToken(key) {
+        try {
+            const item = await SecureStore.getItemAsync(key)
+            if (item) {
+                console.log(`${key} was used 🔐 \n`)
+            } else {
+                console.log('No values stored under key: ' + key)
+            }
+            return item
+        } catch (error) {
+            console.error('SecureStore get item error: ', error)
+            await SecureStore.deleteItemAsync(key)
+            return null
+        }
+    },
+    async saveToken(key, value) {
+        try {
+            return SecureStore.setItemAsync(key, value)
+        } catch (err) {
+            return
+        }
+    },
+}
+
+const publishableKey = process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY
+
+if (!publishableKey) {
+    throw new Error(
+        'Missing Publishable Key. Please set EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY in your .env',
     )
 }
 
-function MainLayout() {
-
-    const { setAuth, setUserData } = useAuth();
-    const router = useRouter();
-
-    useEffect(() => {
-        supabase.auth.onAuthStateChange((_event, session) => {
-            console.log('session user: ', session?.user?.id)
-
-            if (session) {
-                setAuth(session?.user);
-                updateUserData(session?.user, session?.user?.email);
-                router.replace('/home');
-            } else {
-                setAuth(null);
-                router.replace('/welcome');
-            }
-        })
-    }, [])
-
-    const updateUserData = async (user, email) => {
-        const response = await getUserData(user?.id);
-        if (response.success) setUserData({...response.data, email});
-    }
+export default function RootLayout() {
 
     return (
-        <Stack
-            screenOptions={{
-                headerShown: false
-            }}
-        />
+        <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
+            <Stack
+                screenOptions={{
+                    headerShown: false
+                }}
+            />
+        </ClerkProvider>
     )
 }
