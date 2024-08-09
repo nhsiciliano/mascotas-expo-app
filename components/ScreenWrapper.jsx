@@ -6,7 +6,7 @@ export default function ScreenWrapper({ children, bg }) {
     const { top } = useSafeAreaInsets();
     const paddingTop = top > 0 ? top + 5 : 30;
     return (
-        <View style={{ flex: 1, paddingTop, backgroundColor: bg }}>
+        <View style={{ flex: 1, paddingTop, paddingHorizontal: 16, backgroundColor: bg }}>
             {
                 children
             }
