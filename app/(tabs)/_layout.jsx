@@ -1,5 +1,5 @@
 import React from 'react'
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { Ionicons, MaterialIcons} from '@expo/vector-icons';
 import { Tabs } from 'expo-router'
 
 export default function _layout() {
@@ -21,6 +21,12 @@ export default function _layout() {
                 options={{
                     title: 'Favoritos',
                     tabBarIcon: ({ color }) => <Ionicons name="heart" size={24} color={color} />
+                }}
+            />
+            <Tabs.Screen name='addpet'
+                options={{
+                    title: 'Crear',
+                    tabBarIcon: ({ color }) => <MaterialIcons name="pets" size={24} color={color} />
                 }}
             />
             <Tabs.Screen name='chat'

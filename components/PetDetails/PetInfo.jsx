@@ -3,6 +3,7 @@ import React from 'react'
 import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { useRouter } from 'expo-router';
+import MarkFav from '../MarkFav';
 
 export default function PetInfo({ pet }) {
     const router = useRouter();
@@ -25,7 +26,7 @@ export default function PetInfo({ pet }) {
                     <Text className='font-bold' style={{ fontSize: hp(2.7) }}>{pet?.name}</Text>
                     <Text className='text-lime-700 bg-lime-200 px-1 rounded-lg' style={{ fontSize: hp(1.6) }}>{pet?.address}</Text>
                 </View>
-                <Ionicons name="heart-outline" size={30} color="black" />
+                <MarkFav pet={pet} />
             </View>
         </View>
     )

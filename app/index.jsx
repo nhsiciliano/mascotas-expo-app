@@ -1,8 +1,6 @@
 import { View } from 'react-native'
 import React, { useEffect } from 'react'
 import { Redirect, useRootNavigationState } from 'expo-router'
-import Loading from '../components/Loading';
-import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { useUser } from '@clerk/clerk-expo';
 
 export default function IndexPage() {
@@ -13,7 +11,7 @@ export default function IndexPage() {
 
     useEffect(() => {
         checkNavLoaded();
-    }, [])
+    }, [user])
 
     const checkNavLoaded = () => {
         if (!useNavigationState)
