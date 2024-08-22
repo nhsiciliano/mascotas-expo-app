@@ -2,11 +2,11 @@ import { View, Text } from 'react-native'
 import React from 'react'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-export default function ScreenWrapper({ children, bg }) {
+export default function ScreenWrapper({ children, bg, mb }) {
     const { top } = useSafeAreaInsets();
     const paddingTop = top > 0 ? top + 5 : 30;
     return (
-        <View style={{ flex: 1, paddingTop, paddingHorizontal: 16, backgroundColor: bg }}>
+        <View style={{ flex: 1, paddingTop, paddingHorizontal: 16, backgroundColor: bg, marginBottom: mb }}>
             {
                 children
             }

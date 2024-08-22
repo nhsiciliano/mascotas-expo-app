@@ -1,15 +1,20 @@
-import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, Pressable } from 'react-native'
+import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
-import { getDocs, collection } from 'firebase/firestore'
+import { getDocs, collection, setDoc, doc } from 'firebase/firestore'
 import { db, storage } from '../../config/FirebaseConfig'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { Picker } from '@react-native-picker/picker'
 import * as ImagePicker from 'expo-image-picker';
 import { Alert } from 'react-native'
 import { getDownloadURL, ref, uploadBytes } from 'firebase/storage'
+import { useUser } from '@clerk/clerk-expo'
+import { useRouter } from 'expo-router'
 
 export default function AddPetScreen() {
+
+    const { user } = useUser()
+    const router = useRouter()
 
     const [formData, setFormData] = useState(
         { category: 'Gato', sex: 'Macho', castrado: 'Si', desparasitado: 'Si' }
@@ -18,6 +23,7 @@ export default function AddPetScreen() {
     const [cast, setCast] = useState()
     const [parast, setParast] = useState()
     const [image, setImage] = useState()
+    const [loader, setLoader] = useState(false)
 
     const [categoryList, setCategoryList] = useState([])
     const [selectedCategory, setSelectedCategory] = useState()
@@ -57,8 +63,7 @@ export default function AddPetScreen() {
     };
 
     const onSubmit = () => {
-        if (Object.keys(formData).length != 8)
-        {
+        if (Object.keys(formData).length != 8) {
             Alert.alert('Por favor completa todos los campos para crear la nueva adopción.');
             return;
         }
@@ -66,6 +71,7 @@ export default function AddPetScreen() {
     }
 
     const uploadImage = async () => {
+        setLoader(true)
         const response = await fetch(image);
         const blobImage = await response.blob();
         const storageRef = ref(storage, '/mascotas-expo-app/' + Date.now() + '.jpg');
@@ -73,10 +79,29 @@ export default function AddPetScreen() {
         uploadBytes(storageRef, blobImage).then((snapshot) => {
             console.log('Archivo agregado');
         }).then(resp => {
-            getDownloadURL(storageRef).then(async(downloadUrl) => {
+            getDownloadURL(storageRef).then(async (downloadUrl) => {
                 console.log(downloadUrl)
+                saveFormData(downloadUrl)
             })
         })
+    }
+
+    const saveFormData = async (imageUrl) => {
+        const docId = Date.now().toString();
+        await setDoc(doc(db, 'Pets', docId), {
+            ...formData,
+            imageURL: imageUrl,
+            username: user?.fullName,
+            useremail: user?.primaryEmailAddress?.emailAddress,
+            userimage: user?.imageUrl,
+            id: docId,
+        })
+        setLoader(false)
+        setFormData({
+            category: 'Gato', sex: 'Macho', castrado: 'Si', desparasitado: 'Si'
+        })
+        setImage()
+        router.replace('/(tabs)/home')
     }
 
     return (
@@ -205,8 +230,16 @@ export default function AddPetScreen() {
                         onChangeText={(value) => handleInputChange('about', value)}
                     />
                 </View>
-                <TouchableOpacity onPress={onSubmit} className='p-4 bg-lime-200 rounded-md my-3'>
-                    <Text style={{ fontSize: hp(2) }} className='font-semibold text-center text-lime-800'>Crear adopción</Text>
+                <TouchableOpacity
+                    onPress={onSubmit}
+                    disabled={loader}
+                    className='p-4 bg-lime-200 rounded-md my-3'
+                >
+                    {loader ?
+                        <ActivityIndicator size={'small'} color={'darkgreen'} />
+                            :
+                        <Text style={{ fontSize: hp(2) }} className='font-semibold text-center text-lime-800'>Crear adopción</Text>
+                    }
                 </TouchableOpacity>
             </ScrollView>
         </ScreenWrapper>
