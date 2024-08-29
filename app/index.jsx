@@ -14,7 +14,7 @@ export default function IndexPage() {
     }, [user])
 
     const checkNavLoaded = () => {
-        if (!useNavigationState)
+        if (!useNavigationState.key)
             return null
     }
 

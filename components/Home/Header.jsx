@@ -11,7 +11,7 @@ export default function Header() {
     return (
         <View className='flex flex-row justify-between items-center'>
             <View>
-                <Text style={{ fontSize: hp(2) }} className='font-semibold text-lime-800'>Bienvenido,</Text>
+                <Text style={{ fontSize: hp(2) }} className='font-semibold text-lime-800'>Bienvenido/a,</Text>
                 <Text style={{ fontSize: hp(2.4) }} className='font-bold'>{user?.fullName}</Text>
             </View>
             <Image
