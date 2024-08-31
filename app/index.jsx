@@ -21,9 +21,9 @@ export default function IndexPage() {
     return user && (
         <View className="flex-1 items-center justify-center">
             {
-                user ? 
-                <Redirect href={'/(tabs)/home'} /> :
-                <Redirect href={'login'} />
+                user ?
+                    <Redirect href={'/(tabs)/home'} /> :
+                    <Redirect href={'login'} />
             }
         </View>
     )

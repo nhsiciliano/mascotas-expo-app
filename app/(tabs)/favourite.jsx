@@ -4,7 +4,7 @@ import ScreenWrapper from '../../components/ScreenWrapper'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { getFavList } from '../../shared/shared'
 import { useUser } from '@clerk/clerk-expo'
-import { collection, doc, getDocs, query, where } from 'firebase/firestore'
+import { collection, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../../config/FirebaseConfig'
 import PetCard from '../../components/Home/PetCard'
 
@@ -42,7 +42,7 @@ export default function FavouriteScreen() {
     return (
         <ScreenWrapper>
             <View>
-                <Text className='font-semibold' style={{ fontSize: hp(2.8) }}>Favoritos</Text>
+                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Favoritos</Text>
                 <FlatList
                     data={favPetList}
                     onRefresh={getFavPetId}

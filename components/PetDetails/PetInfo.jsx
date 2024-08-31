@@ -1,6 +1,6 @@
 import { View, Text, Image, Pressable, Platform } from 'react-native'
 import React from 'react'
-import { AntDesign, Ionicons } from '@expo/vector-icons';
+import { AntDesign } from '@expo/vector-icons';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
 import { useRouter } from 'expo-router';
 import MarkFav from '../MarkFav';
