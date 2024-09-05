@@ -1,9 +1,9 @@
-import { View, Text, FlatList, Pressable, Alert, StatusBar } from 'react-native'
+import { View, Text, FlatList, Pressable, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { useUser } from '@clerk/clerk-expo'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { AntDesign } from '@expo/vector-icons';
+import { AntDesign, Ionicons } from '@expo/vector-icons';
 import { collection, deleteDoc, doc, getDocs, query, where } from 'firebase/firestore'
 import { db } from '../../config/FirebaseConfig'
 import PetCard from '../../components/Home/PetCard'
@@ -54,7 +54,7 @@ export default function UserPost() {
     return (
         <View className='p-5 mt-12'>
             <View className='flex flex-row items-center gap-10'>
-                <Pressable onPress={() => router.back()}>
+                <Pressable onPress={() => router.push('/(tabs)/profile')}>
                     <AntDesign name="arrowleft" size={24} color="darkgreen" />
                 </Pressable>
                 <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Mis adopciones creadas</Text>
@@ -65,26 +65,38 @@ export default function UserPost() {
                     <Text style={{ fontSize: hp(1.4) }} className='font-semibold text-neutral-600'>Haz click en Mascota Adoptada una vez que hayas concretado la adopción.</Text>
                 </View>
             </View>
-            <FlatList
-                data={userPostList}
-                refreshing={loader}
-                onRefresh={getUserPost}
-                numColumns={2}
-                renderItem={({ item }) => (
-                    <View>
-                        <PetCard pet={item} key={item?.id} />
-                        <Pressable onPress={() => onDeletePost(item.id)} className='bg-lime-200 p-2 rounded-lg mt-1 mr-2'>
-                            <Text style={{ fontSize: hp(1.8) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
-                        </Pressable>
-                    </View>
-                )}
-            />
             {
-                userPostList?.length == 0 &&
-                <View className='mb-1'>
-                    <Text>Aún no has creado ninguna adopcíon</Text>
-                </View>
+                userPostList?.length >= 1 ? (
+                    <FlatList
+                        data={userPostList}
+                        refreshing={loader}
+                        onRefresh={getUserPost}
+                        numColumns={2}
+                        style={{ marginVertical: 16 }}
+                        renderItem={({ item }) => (
+                            <View>
+                                <PetCard pet={item} key={item?.id} />
+                                <Pressable onPress={() => onDeletePost(item.id)} className='bg-lime-200 p-2 rounded-lg mt-1 mr-2'>
+                                    <Text style={{ fontSize: hp(1.8) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
+                                </Pressable>
+                            </View>
+                        )}
+                    />
+                ) : (
+                    <View className='my-8'>
+                        <Text style={{ fontSize: hp(2.2) }} className='text-center font-semibold'>Aún no has creado ninguna adopción</Text>
+                        <Text style={{ fontSize: hp(1.8) }} className='text-center text-neutral-600 font-semibold mt-3'>Muchas personas cerca tuyo están buscando adoptar un nuevo amigo</Text>
+                        <Pressable
+                            className='flex flex-row items-center justify-center gap-3 my-6 border border-1 border-lime-700 p-3 rounded-lg bg-lime-100'
+                            onPress={() => router.push('/(tabs)/addpet')}
+                        >
+                            <Ionicons name="add-circle" size={24} color="darkgreen" />
+                            <Text style={{ fontSize: hp(2.2) }} className='font-semibold text-lime-800'>Crear nueva adopción</Text>
+                        </Pressable>
+                    </View >
+                )
+
             }
-        </View>
+        </View >
     )
 }

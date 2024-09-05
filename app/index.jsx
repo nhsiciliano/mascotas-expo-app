@@ -1,30 +1,11 @@
-import { View } from 'react-native'
-import React, { useEffect } from 'react'
-import { Redirect, useRootNavigationState } from 'expo-router'
-import { useUser } from '@clerk/clerk-expo';
+import { ActivityIndicator, View } from 'react-native'
+import React from 'react'
 
 export default function IndexPage() {
 
-    const { user } = useUser();
-
-    const useNavigationState = useRootNavigationState();
-
-    useEffect(() => {
-        checkNavLoaded();
-    }, [user])
-
-    const checkNavLoaded = () => {
-        if (!useNavigationState.key)
-            return null
-    }
-
-    return user && (
+    return (
         <View className="flex-1 items-center justify-center">
-            {
-                user ?
-                    <Redirect href={'/(tabs)/home'} /> :
-                    <Redirect href={'login'} />
-            }
+            <ActivityIndicator size={'large'} color={'darkgreen'}/>
         </View>
     )
 }

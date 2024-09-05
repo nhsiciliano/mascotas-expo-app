@@ -46,7 +46,7 @@ export default function ChatInbox() {
     return (
         <ScreenWrapper>
             <View>
-                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Mis Chats</Text>
+                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Mis Chats</Text>
                 <FlatList
                     data={mapOtherUserList()}
                     refreshing={loader}

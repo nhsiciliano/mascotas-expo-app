@@ -42,7 +42,7 @@ export default function FavouriteScreen() {
     return (
         <ScreenWrapper>
             <View>
-                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Favoritos</Text>
+                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Favoritos</Text>
                 <FlatList
                     data={favPetList}
                     onRefresh={getFavPetId}

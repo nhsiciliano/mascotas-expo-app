@@ -25,6 +25,7 @@ export default function Category({ category }) {
             <Text className='text-xl font-semibold'>Encuentra tu nuevo amigo</Text>
             <FlatList
                 data={categoryList}
+                scrollEnabled={false}
                 numColumns={2}
                 renderItem={({ item, index }) => (
                     <TouchableOpacity key={index} className='flex-1 mt-1' onPress={() => {

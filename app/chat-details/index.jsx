@@ -1,7 +1,7 @@
-import { View, Text } from 'react-native'
+import { View, Text, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
-import { useLocalSearchParams, useNavigation } from 'expo-router'
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router'
 import { addDoc, collection, doc, getDoc, onSnapshot } from 'firebase/firestore'
 import { db } from '../../config/FirebaseConfig'
 import { useUser } from '@clerk/clerk-expo'
@@ -12,6 +12,7 @@ export default function ChatScreen() {
 
     const [messages, setMessages] = useState([])
     const { user } = useUser();
+    const router = useRouter();
     const params = useLocalSearchParams();
     const navigation = useNavigation();
 
@@ -43,12 +44,15 @@ export default function ChatScreen() {
 
     const onSend = async (newMessage) => {
         setMessages((previusMessage) => GiftedChat.append(previusMessage, newMessage))
-        newMessage[0].createdAt = moment().format('DD-MM-YYYY HH:mm:ss')
+        newMessage[0].createdAt = moment().format('MM-DD-YYYY HH:mm:ss')
         await addDoc(collection(db, 'Chat', params.id, 'Messages'), newMessage[0])
     }
 
     return (
         <ScreenWrapper mb={38}>
+            <Pressable onPress={() => router.push('chat')}>
+                <Text>Volver</Text>
+            </Pressable>
             <GiftedChat
                 messages={messages}
                 onSend={messages => onSend(messages)}

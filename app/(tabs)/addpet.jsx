@@ -109,8 +109,8 @@ export default function AddPetScreen() {
             <ScrollView
                 showsVerticalScrollIndicator={false}
             >
-                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Crear nueva adopción</Text>
-                <Text style={{ fontSize: hp(1.7) }} className='font-semibold text-lime-800'>Todos los campos a completar son obligatorios</Text>
+                <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Crear nueva adopción</Text>
+                <Text style={{ fontSize: hp(1.7) }} className='font-semibold text-lime-800 text-center'>Todos los campos a completar son obligatorios</Text>
                 <Pressable onPress={imagePicker}>
                     {!image ?
                         <Image

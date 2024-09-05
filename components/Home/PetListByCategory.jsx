@@ -36,6 +36,7 @@ export default function PetListByCategory() {
                     <FlatList
                         data={petList}
                         numColumns={2}
+                        scrollEnabled={false}
                         style={{ marginTop: 10 }}
                         renderItem={({ item, index }) => (
                             <PetCard pet={item} key={index} />

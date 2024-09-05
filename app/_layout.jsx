@@ -1,7 +1,8 @@
-import { Stack } from 'expo-router'
 import '../global.css'
 import * as SecureStore from 'expo-secure-store'
-import { ClerkProvider } from '@clerk/clerk-expo'
+import React, { useEffect } from 'react'
+import { ClerkProvider, useAuth } from '@clerk/clerk-expo'
+import { Slot, useRouter, useSegments } from "expo-router";
 
 const tokenCache = {
     async getToken(key) {
@@ -36,21 +37,35 @@ if (!publishableKey) {
     )
 }
 
+const InitialLayout = () => {
+    const { isLoaded, isSignedIn } = useAuth();
+    const segments = useSegments();
+    const router = useRouter();
+
+    // Watch user status to redirect
+    useEffect(() => {
+        if (!isLoaded) return;
+
+        // No need to redirect again if in auth section
+        const inTabsGroup = segments[0] === "(tabs)";
+
+        if (isSignedIn && !inTabsGroup) {
+            router.replace("/(tabs)/home");
+        } else if (!isSignedIn) {
+            router.replace("/(public)/welcome");
+        }
+    }, [isSignedIn]);
+
+    // Slot will render the current child route, think of this like the children prop in React.
+    // This component can be wrapped with other components to create a layout.
+    return <Slot />;
+};
+
 export default function RootLayout() {
 
     return (
         <ClerkProvider tokenCache={tokenCache} publishableKey={publishableKey}>
-            <Stack
-                screenOptions={{
-                    headerShown: false
-                }}
-            >
-                <Stack.Screen name='index' />
-                <Stack.Screen name='welcome' />
-                <Stack.Screen name='login' />
-                <Stack.Screen name='signUp' />
-                <Stack.Screen name='(tabs)' />
-            </Stack>
+            <InitialLayout />
         </ClerkProvider>
     )
 }

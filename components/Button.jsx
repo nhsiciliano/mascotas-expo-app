@@ -1,8 +1,9 @@
-import { Pressable, StyleSheet, Text } from 'react-native'
+import { Image, StyleSheet, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
 const Button = ({
+    source,
     buttonStyle,
     textStyle,
     title='',
@@ -14,9 +15,10 @@ const Button = ({
 
     }
     return (
-        <Pressable onPress={onPress} className='bg-teal-700' style={[ styles.button, buttonStyle, hasShadow && shadowStyle ]}>
+        <TouchableOpacity onPress={onPress} className='bg-white border-2 border-lime-800' style={[ styles.button, buttonStyle ]}>
+            <Image source={source} style={{ height:30, width: 30 }} />
             <Text style={[ styles.text, textStyle ]}>{title}</Text>
-        </Pressable>
+        </TouchableOpacity>
     )
 }
 
@@ -24,15 +26,18 @@ export default Button
 
 const styles = StyleSheet.create({
     button: {
-        height: hp(6.6),
+        height: hp(6.1),
+        width: '90%',
+        display: 'flex',
+        flexDirection: 'row',
+        gap: 10,
         justifyContent: 'center',
         alignItems: 'center',
-        borderCurve: 'continuous',
-        borderRadius: 18,
+        borderRadius: 10,
     },
     text: {
         fontSize: hp(2.2),
-        color: 'white',
-        fontWeight: 'bold'
+        color: 'black',
+        fontWeight: '700'
     }
 })

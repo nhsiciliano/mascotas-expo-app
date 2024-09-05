@@ -32,12 +32,6 @@ export default function ProfileScreen() {
             name: 'Mis chats',
             icon: 'chatbubble',
             path: '/(tabs)/chat',
-        },
-        {
-            id: 5,
-            name: 'Cerrar sesión',
-            icon: 'exit',
-            path: 'logout',
         }
     ]
 
@@ -46,16 +40,16 @@ export default function ProfileScreen() {
     const { signOut } = useAuth();
 
     const onPressMenu = (menu) => {
-        if (menu.path === 'logout') {
-            signOut();
-        }
-
         router.push(menu.path);
+    }
+
+    const logOut = () => {
+        signOut();
     }
 
     return (
         <ScreenWrapper>
-            <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800'>Mi Perfil</Text>
+            <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Mi Perfil</Text>
             <View className='flex items-center my-7'>
                 <Image
                     source={{ uri: user?.imageUrl }}
@@ -90,6 +84,22 @@ export default function ProfileScreen() {
                     </TouchableOpacity>
                 )}
             />
+            <TouchableOpacity 
+                className='flex flex-row items-center gap-3 bg-white rounded-lg p-2 mb-4'
+                onPress={logOut}    
+            >
+                <View className='rounded-lg bg-lime-300'>
+                    <Ionicons
+                        name='exit'
+                        size={32}
+                        color={'darkgreen'}
+                        style={{
+                            padding: 10,
+                        }}
+                    />
+                </View>
+                <Text className='font-semibold' style={{ fontSize: hp(2) }}>Cerrar sesión</Text>
+            </TouchableOpacity>
         </ScreenWrapper>
     )
 }
