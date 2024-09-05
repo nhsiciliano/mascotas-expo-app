@@ -1,148 +1,116 @@
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, Pressable } from 'react-native'
 import React, { useState } from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { StatusBar } from 'expo-status-bar';
-import { Octicons, Feather, AntDesign } from '@expo/vector-icons';
-import { supabase } from '../../lib/supabase';
-import Loading from '../../components/Loading';
 import CustomKeyboardView from '../../components/CustomKeyboardView';
-import { useRouter } from 'expo-router';
-import WelcomeAnimation from '../../components/WelcomeAnimation';
+import { useRouter, Stack } from 'expo-router';
 import ScreenWrapper from '../../components/ScreenWrapper';
+import { useSignUp } from '@clerk/clerk-expo';
 
 export default function SignUp() {
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [full_name, setFull_name] = useState('')
-    const [username, setUsername] = useState('')
-    const [loading, setLoading] = useState(false)
+    const { signUp, setActive, isLoaded } = useSignUp();
+    const [emailAddress, setEmailAddress] = useState("");
+    const [password, setPassword] = useState("");
+    const [pendingVerification, setPendingVerification] = useState(false);
+    const [code, setCode] = useState("");
+    const [loading, setLoading] = useState(false);
 
     const router = useRouter();
 
-
-    const onSubmitSignUp = async () => {
-        setLoading(true)
-        const { data: { session, }, error } = await supabase.auth.signUp({
-            email,
-            password,
-            options: {
-                data: {
-                    username,
-                    full_name,
-                }
-            }
-        })
-        setLoading(false)
-
-        //console.log('session: ', session)
-        //console.log('error: ', error)
-        if (error) {
-            Alert.alert('Sign Up', error.message)
+    const onSignUpPress = async () => {
+        if (!isLoaded) {
+            return;
         }
-    }
+
+        setLoading(true);
+
+        try {
+            await signUp.create({
+                emailAddress,
+                password,
+            });
+
+            // Send verification Email
+            await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+
+            // change the UI to verify the email address
+            setPendingVerification(true);
+        } catch (err) {
+            alert(err.errors[0].message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const onPressVerify = async () => {
+        if (!isLoaded) {
+            return;
+        }
+
+        setLoading(true);
+
+        try {
+            const completeSignUp = await signUp.attemptEmailAddressVerification({
+                code,
+            });
+
+            await setActive({ session: completeSignUp.createdSessionId });
+        } catch (err) {
+            alert(err.errors[0].message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+
 
     return (
-        <ScreenWrapper bg={'#d9f99d'}>
-            <CustomKeyboardView>
-                <StatusBar style='dark' />
-                <View style={{ paddingTop: hp(1), paddingHorizontal: wp(5) }} className="flex-1 gap-12">
-                    <View className="items-center">
-                        <WelcomeAnimation
-                            size={hp(32)}
-                            source={require('../../assets/images/dogsintro.json')}
+        <View className='flex-1 p-5 justify-center'>
+
+                {!pendingVerification && (
+                    <>
+                        <TextInput
+                            autoCapitalize="none"
+                            placeholder="tuemail@gmail.com"
+                            value={emailAddress}
+                            onChangeText={setEmailAddress}
+                            className='p-3 mb-2 h-14 border border-lime-600 rounded-lg bg-white'
                         />
-                    </View>
+                        <TextInput
+                            placeholder="******"
+                            value={password}
+                            onChangeText={setPassword}
+                            secureTextEntry
+                            className='p-3 mb-2 h-14 border border-lime-600 rounded-lg bg-white'
+                        />
 
-                    <View className="gap-10">
-                        <View className="gap-4">
-                            <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                <Feather name="user" size={hp(2.7)} color="gray" />
-                                <TextInput
-                                    onChangeText={(text) => setUsername(text)}
-                                    value={username}
-                                    style={{ fontSize: hp(2) }}
-                                    className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                    placeholder='Nombre de usuario'
-                                    autoCapitalize={'none'}
-                                    placeholderTextColor={'gray'}
-                                />
-                            </View>
-                            <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                <AntDesign name="idcard" size={hp(2.7)} color="gray" />
-                                <TextInput
-                                    onChangeText={(text) => setFull_name(text)}
-                                    value={full_name}
-                                    style={{ fontSize: hp(2) }}
-                                    className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                    placeholder='Nombre y Apellido'
-                                    autoCapitalize={'none'}
-                                    placeholderTextColor={'gray'}
-                                />
-                            </View>
-                            <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                <Octicons name='mail' size={hp(2.7)} color="gray" />
-                                <TextInput
-                                    onChangeText={(text) => setEmail(text)}
-                                    value={email}
-                                    style={{ fontSize: hp(2) }}
-                                    className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                    placeholder='Email'
-                                    autoCapitalize={'none'}
-                                    placeholderTextColor={'gray'}
-                                />
-                            </View>
-                            <View className="gap-3">
-                                <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                    <Octicons name='lock' size={hp(2.7)} color="gray" />
-                                    <TextInput
-                                        onChangeText={(text) => setPassword(text)}
-                                        value={password}
-                                        style={{ fontSize: hp(2) }}
-                                        className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                        placeholder='Contraseña'
-                                        secureTextEntry
-                                        placeholderTextColor={'gray'}
-                                    />
-                                </View>
-                            </View>
+                        <TouchableOpacity
+                            onPress={onSignUpPress}
+                            className='mt-3 bg-white border-2 border-lime-800 flex flex-row justify-center items-center p-3 rounded-lg'
+                        >
+                            <Text style={{ fontSize: hp(2.2) }} className='font-semibold text-lime-800'>Registrarse</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
 
-                            <View className='gap-4'>
-                                <View>
-                                    {
-                                        loading ? (
-                                            <View className="flex-row justify-center">
-                                                <Loading size={hp(8.5)} />
-                                            </View>
-                                        ) : (
-                                            <View>
-                                                <TouchableOpacity
-                                                    style={{ height: hp(5.5) }}
-                                                    className="bg-lime-600 rounded-xl justify-center items-center"
-                                                    onPress={onSubmitSignUp}
-                                                >
-                                                    <Text style={{ fontSize: hp(2.7) }} className="text-white font-bold tracking-wider">
-                                                        Crear una cuenta
-                                                    </Text>
-                                                </TouchableOpacity>
-                                            </View>
-                                        )
-                                    }
-                                </View>
-
-                                <View className="flex-row justify-center gap-2">
-                                    <Text style={{ fontSize: hp(1.8) }} className="font-semibold text-neutral-500">¿Ya tienes una cuenta?</Text>
-                                    <Pressable
-                                        onPress={() => router.push('login')}
-                                    >
-                                        <Text style={{ fontSize: hp(1.8) }} className="font-bold text-lime-700">Iniciar sesión</Text>
-                                    </Pressable>
-                                </View>
-                            </View>
+                {pendingVerification && (
+                    <>
+                        <View>
+                            <TextInput
+                                value={code}
+                                placeholder="Code..."
+                                className='p-3 mb-2 h-14 border border-lime-600 rounded-lg bg-white'
+                                onChangeText={setCode}
+                            />
                         </View>
-                    </View>
-                </View>
-            </CustomKeyboardView>
-        </ScreenWrapper>
+                        <TouchableOpacity
+                            onPress={onPressVerify}
+                            className='mt-3 bg-white border-2 border-lime-800 flex flex-row justify-center items-center p-3 rounded-lg'
+                        >
+                            <Text style={{ fontSize: hp(2.2) }} className='font-semibold text-lime-800'>Verificar Email</Text>
+                        </TouchableOpacity>
+                    </>
+                )}
+        </View>
     )
 }
