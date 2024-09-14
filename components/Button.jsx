@@ -1,4 +1,4 @@
-import { Image, StyleSheet, Text, TouchableOpacity } from 'react-native'
+import { ActivityIndicator, Image, StyleSheet, Text, TouchableOpacity } from 'react-native'
 import React from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 
@@ -6,18 +6,24 @@ const Button = ({
     source,
     buttonStyle,
     textStyle,
-    title='',
-    onPress= () => {},
-    loading = false,
+    title = '',
+    onPress = () => { },
+    isLoading = false,
     hasShadow = true,
 }) => {
     const shadowStyle = {
 
     }
     return (
-        <TouchableOpacity onPress={onPress} className='bg-white border-2 border-lime-800' style={[ styles.button, buttonStyle ]}>
-            <Image source={source} style={{ height:30, width: 30 }} />
-            <Text style={[ styles.text, textStyle ]}>{title}</Text>
+        <TouchableOpacity onPress={onPress} disabled={isLoading} className='bg-white border-2 border-lime-800' style={[styles.button, buttonStyle]}>
+            {isLoading ? (
+                <ActivityIndicator size={'small'} color={'darkgreen'} />
+            ) : (
+                <>
+                    <Image source={source} style={{ height: 30, width: 30 }} />
+                    <Text style={styles.text}>{title}</Text>
+                </>
+            )}
         </TouchableOpacity>
     )
 }
@@ -38,6 +44,6 @@ const styles = StyleSheet.create({
     text: {
         fontSize: hp(2.2),
         color: 'black',
-        fontWeight: '700'
+        fontWeight: '600'
     }
 })

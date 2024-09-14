@@ -1,4 +1,4 @@
-import { View, Text, FlatList } from 'react-native'
+import { View, Text, FlatList, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
@@ -23,9 +23,9 @@ export default function FavouriteScreen() {
         setLoader(true);
         const result = await getFavList(user);
         setFavIds(result?.favorites)
-        setLoader(false);
         console.log('Result: ', favPetList)
         getFavPetList(result?.favorites);
+        setLoader(false);
     }
 
     const getFavPetList = async (favId_) => {
@@ -43,18 +43,35 @@ export default function FavouriteScreen() {
         <ScreenWrapper>
             <View>
                 <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Favoritos</Text>
-                <FlatList
-                    data={favPetList}
-                    onRefresh={getFavPetId}
-                    refreshing={loader}
-                    style={{ marginTop: 18 }}
-                    numColumns={2}
-                    renderItem={({ item, index }) => (
-                        <View>
-                            <PetCard pet={item}/>
-                        </View>
-                    )}      
-                />
+                {
+                    loader ? (
+                        <ActivityIndicator size={'small'} color={'darkgreen'} style={{ paddingVertical: 48 }}/>
+                    ) : (
+                        <>
+                            {
+                                favPetList?.length >= 1 ? (
+                                    <FlatList
+                                        data={favPetList}
+                                        onRefresh={getFavPetId}
+                                        refreshing={loader}
+                                        style={{ marginTop: 18 }}
+                                        numColumns={2}
+                                        renderItem={({ item, index }) => (
+                                            <View>
+                                                <PetCard pet={item} />
+                                            </View>
+                                        )}
+                                    />
+                                ) : (
+                                    <View className='my-8'>
+                                        <Text style={{ fontSize: hp(2.2) }} className='text-center font-semibold'>Aún no has agregado a favoritos</Text>
+                                        <Text style={{ fontSize: hp(1.8) }} className='text-center text-neutral-600 font-semibold mt-3'>Busca cerca tuyo una mascota que esté en adopción y dale una oportunidad</Text>
+                                    </View >
+                                )
+                            }
+                        </>
+                    )
+                }
             </View>
         </ScreenWrapper>
     )

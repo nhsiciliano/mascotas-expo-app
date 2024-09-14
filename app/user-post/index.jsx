@@ -1,4 +1,4 @@
-import { View, Text, FlatList, Pressable, Alert } from 'react-native'
+import { View, Text, FlatList, Pressable, Alert, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
 import { useUser } from '@clerk/clerk-expo'
@@ -66,36 +66,44 @@ export default function UserPost() {
                 </View>
             </View>
             {
-                userPostList?.length >= 1 ? (
-                    <FlatList
-                        data={userPostList}
-                        refreshing={loader}
-                        onRefresh={getUserPost}
-                        numColumns={2}
-                        style={{ marginVertical: 16 }}
-                        renderItem={({ item }) => (
-                            <View>
-                                <PetCard pet={item} key={item?.id} />
-                                <Pressable onPress={() => onDeletePost(item.id)} className='bg-lime-200 p-2 rounded-lg mt-1 mr-2'>
-                                    <Text style={{ fontSize: hp(1.8) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
-                                </Pressable>
-                            </View>
-                        )}
-                    />
+                loader ? (
+                    <ActivityIndicator size={'small'} color={'darkgreen'} style={{ paddingVertical: 48 }} />
                 ) : (
-                    <View className='my-8'>
-                        <Text style={{ fontSize: hp(2.2) }} className='text-center font-semibold'>Aún no has creado ninguna adopción</Text>
-                        <Text style={{ fontSize: hp(1.8) }} className='text-center text-neutral-600 font-semibold mt-3'>Muchas personas cerca tuyo están buscando adoptar un nuevo amigo</Text>
-                        <Pressable
-                            className='flex flex-row items-center justify-center gap-3 my-6 border border-1 border-lime-700 p-3 rounded-lg bg-lime-100'
-                            onPress={() => router.push('/(tabs)/addpet')}
-                        >
-                            <Ionicons name="add-circle" size={24} color="darkgreen" />
-                            <Text style={{ fontSize: hp(2.2) }} className='font-semibold text-lime-800'>Crear nueva adopción</Text>
-                        </Pressable>
-                    </View >
-                )
+                    <>
+                        {
+                            userPostList?.length >= 1 ? (
+                                <FlatList
+                                    data={userPostList}
+                                    refreshing={loader}
+                                    onRefresh={getUserPost}
+                                    numColumns={2}
+                                    style={{ marginVertical: 16 }}
+                                    renderItem={({ item }) => (
+                                        <View>
+                                            <PetCard pet={item} key={item?.id} />
+                                            <Pressable onPress={() => onDeletePost(item.id)} className='bg-lime-200 p-2 rounded-lg mt-1 mr-2'>
+                                                <Text style={{ fontSize: hp(1.8) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
+                                            </Pressable>
+                                        </View>
+                                    )}
+                                />
+                            ) : (
+                                <View className='my-8'>
+                                    <Text style={{ fontSize: hp(2.2) }} className='text-center font-semibold'>Aún no has creado ninguna adopción</Text>
+                                    <Text style={{ fontSize: hp(1.8) }} className='text-center text-neutral-600 font-semibold mt-3'>Muchas personas cerca tuyo están buscando adoptar un nuevo amigo</Text>
+                                    <Pressable
+                                        className='flex flex-row items-center justify-center gap-3 my-6 border border-1 border-lime-700 p-3 rounded-lg bg-lime-100'
+                                        onPress={() => router.push('/(tabs)/addpet')}
+                                    >
+                                        <Ionicons name="add-circle" size={24} color="darkgreen" />
+                                        <Text style={{ fontSize: hp(2.2) }} className='font-semibold text-lime-800'>Crear nueva adopción</Text>
+                                    </Pressable>
+                                </View >
+                            )
 
+                        }
+                    </>
+                )
             }
         </View >
     )

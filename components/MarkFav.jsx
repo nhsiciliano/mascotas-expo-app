@@ -1,4 +1,4 @@
-import { View, Text, Pressable } from 'react-native'
+import { View, Pressable } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Ionicons } from '@expo/vector-icons';
 import { getFavList, updateFav } from '../shared/shared';

@@ -74,13 +74,12 @@ export default function AddPetScreen() {
         setLoader(true)
         const response = await fetch(image);
         const blobImage = await response.blob();
-        const storageRef = ref(storage, '/mascotas-expo-app/' + Date.now() + '.jpg');
+        const storageRef = ref(storage, '/mascotas-expo-app' + Date.now() + '.jpg');
 
         uploadBytes(storageRef, blobImage).then((snapshot) => {
             console.log('Archivo agregado');
         }).then(resp => {
             getDownloadURL(storageRef).then(async (downloadUrl) => {
-                console.log(downloadUrl)
                 saveFormData(downloadUrl)
             })
         })
