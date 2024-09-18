@@ -32,7 +32,7 @@ export default function ChatInbox() {
     const mapOtherUserList = () => {
         const list = [];
         userList.forEach((record) => {
-            const otherUser = record.users?.filter(user => user?.email != user?.primaryEmailAddress?.emailAddress)
+            const otherUser = record.users?.filter(item => item?.email != user?.primaryEmailAddress?.emailAddress)
             const result = {
                 docId: record.id,
                 ...otherUser[0]
@@ -52,7 +52,8 @@ export default function ChatInbox() {
                     refreshing={loader}
                     onRefresh={getUserList}
                     style={{
-                        marginTop: 20
+                        marginTop: 30,
+                        marginVertical: 30,
                     }}
                     renderItem={({ item, index }) => (
                         <UserItem userInfo={item} key={index} />

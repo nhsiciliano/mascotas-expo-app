@@ -1,6 +1,6 @@
 import { View, Text, Image } from 'react-native'
 import React from 'react'
-import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen'
 import { Link } from 'expo-router'
 
 export default function UserItem({ userInfo }) {
@@ -17,7 +17,7 @@ export default function UserItem({ userInfo }) {
                 />
                 <Text style={{ fontSize: hp(1.8) }} className='font-semibold'>{userInfo?.name}</Text>
             </View>
-            <View style={{ borderWidth: 0.6, marginVertical: 7, borderColor: 'darkgreen' }}>
+            <View style={{ display: 'flex', flexDirection: 'row', width: wp(90), borderWidth: 0.5, marginVertical: 7, borderColor: 'darkgreen' }}>
             </View>
         </Link>
     )

@@ -1,6 +1,7 @@
 import { View, Text, Image, TextInput, ScrollView, TouchableOpacity, Pressable, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import ScreenWrapper from '../../components/ScreenWrapper'
+import CustomKeyboardView from '../../components/CustomKeyboardView'
 import { getDocs, collection, setDoc, doc } from 'firebase/firestore'
 import { db, storage } from '../../config/FirebaseConfig'
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen'
@@ -105,9 +106,7 @@ export default function AddPetScreen() {
 
     return (
         <ScreenWrapper>
-            <ScrollView
-                showsVerticalScrollIndicator={false}
-            >
+            <CustomKeyboardView>
                 <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Crear nueva adopción</Text>
                 <Text style={{ fontSize: hp(1.7) }} className='font-semibold text-lime-800 text-center'>Todos los campos a completar son obligatorios</Text>
                 <Pressable onPress={imagePicker}>
@@ -146,7 +145,7 @@ export default function AddPetScreen() {
                     <Text style={{ fontSize: hp(1.7) }} className='text-lime-800 font-semibold'>Edad</Text>
                     <TextInput
                         className='p-3 bg-white rounded-md mt-2'
-                        placeholder='4 meses / 3 años'
+                        placeholder='4 meses / 2 años'
                         onChangeText={(value) => handleInputChange('age', value)}
                     />
                 </View>
@@ -236,11 +235,11 @@ export default function AddPetScreen() {
                 >
                     {loader ?
                         <ActivityIndicator size={'small'} color={'darkgreen'} />
-                            :
+                        :
                         <Text style={{ fontSize: hp(2) }} className='font-semibold text-center text-lime-800'>Crear adopción</Text>
                     }
                 </TouchableOpacity>
-            </ScrollView>
+            </CustomKeyboardView>
         </ScreenWrapper>
     )
 }

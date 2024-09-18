@@ -52,7 +52,7 @@ export default function UserPost() {
     }
 
     return (
-        <View className='p-5 mt-12'>
+        <View className='p-4 mt-12'>
             <View className='flex flex-row items-center gap-10'>
                 <Pressable onPress={() => router.push('/(tabs)/profile')}>
                     <AntDesign name="arrowleft" size={24} color="darkgreen" />
@@ -79,10 +79,10 @@ export default function UserPost() {
                                     numColumns={2}
                                     style={{ marginVertical: 16 }}
                                     renderItem={({ item }) => (
-                                        <View>
+                                        <View className='flex items-center justify-center'>
                                             <PetCard pet={item} key={item?.id} />
-                                            <Pressable onPress={() => onDeletePost(item.id)} className='bg-lime-200 p-2 rounded-lg mt-1 mr-2'>
-                                                <Text style={{ fontSize: hp(1.8) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
+                                            <Pressable onPress={() => onDeletePost(item.id)} style={{ marginRight: 14 }} className='bg-lime-200 w-[90%] p-2 rounded-lg mt-1'>
+                                                <Text style={{ fontSize: hp(1.6) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
                                             </Pressable>
                                         </View>
                                     )}
