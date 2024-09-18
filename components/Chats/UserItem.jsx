@@ -17,7 +17,7 @@ export default function UserItem({ userInfo }) {
                 />
                 <Text style={{ fontSize: hp(1.8) }} className='font-semibold'>{userInfo?.name}</Text>
             </View>
-            <View style={{ display: 'flex', flexDirection: 'row', width: wp(90), borderWidth: 0.5, marginVertical: 7, borderColor: 'darkgreen' }}>
+            <View style={{ display: 'flex', flexDirection: 'row', width: wp(90), borderWidth: 0.5, marginVertical: 7, borderColor: 'lightgray' }}>
             </View>
         </Link>
     )

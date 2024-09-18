@@ -81,7 +81,7 @@ export default function UserPost() {
                                     renderItem={({ item }) => (
                                         <View className='flex items-center justify-center'>
                                             <PetCard pet={item} key={item?.id} />
-                                            <Pressable onPress={() => onDeletePost(item.id)} style={{ marginRight: 14 }} className='bg-lime-200 w-[90%] p-2 rounded-lg mt-1'>
+                                            <Pressable onPress={() => onDeletePost(item.id)} style={{ marginRight: 14 }} className='bg-lime-200 w-[92%] p-2 rounded-lg mt-1'>
                                                 <Text style={{ fontSize: hp(1.6) }} className='font-semibold text-lime-700 text-center'>Mascota Adoptada</Text>
                                             </Pressable>
                                         </View>

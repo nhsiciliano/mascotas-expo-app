@@ -5,6 +5,7 @@ import { useUser } from '@clerk/clerk-expo'
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { db } from '../../config/FirebaseConfig';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
+import { Ionicons } from '@expo/vector-icons';
 import UserItem from '../../components/Chats/UserItem';
 
 export default function ChatInbox() {
@@ -47,13 +48,19 @@ export default function ChatInbox() {
         <ScreenWrapper>
             <View>
                 <Text style={{ fontSize: hp(2.6) }} className='font-bold text-lime-800 text-center'>Mis Chats</Text>
+                <View className='flex flex-row mt-3 items-center gap-1'>
+                    <Ionicons name="chatbubbles-outline" size={20} color="black" />
+                    <View className='p-2'>
+                        <Text style={{ fontSize: hp(1.4) }} className='font-semibold text-neutral-600'>Aquí se encuentran los chats activos con otros usuarios.</Text>
+                    </View>
+                </View>
                 <FlatList
                     data={mapOtherUserList()}
                     refreshing={loader}
                     onRefresh={getUserList}
                     style={{
-                        marginTop: 30,
-                        marginVertical: 30,
+                        marginTop: 20,
+                        paddingVertical: 10,
                     }}
                     renderItem={({ item, index }) => (
                         <UserItem userInfo={item} key={index} />

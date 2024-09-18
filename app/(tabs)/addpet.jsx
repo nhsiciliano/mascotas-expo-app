@@ -138,6 +138,7 @@ export default function AddPetScreen() {
                     <TextInput
                         className='p-3 bg-white rounded-md mt-2'
                         placeholder='Edna'
+                        placeholderTextColor='gray'
                         onChangeText={(value) => handleInputChange('name', value)}
                     />
                 </View>
@@ -146,6 +147,7 @@ export default function AddPetScreen() {
                     <TextInput
                         className='p-3 bg-white rounded-md mt-2'
                         placeholder='4 meses / 2 años'
+                        placeholderTextColor='gray'
                         onChangeText={(value) => handleInputChange('age', value)}
                     />
                 </View>
@@ -215,6 +217,7 @@ export default function AddPetScreen() {
                     <TextInput
                         className='p-3 bg-white rounded-md mt-2'
                         placeholder='Caballito, CABA'
+                        placeholderTextColor='gray'
                         onChangeText={(value) => handleInputChange('address', value)}
                     />
                 </View>
@@ -225,6 +228,7 @@ export default function AddPetScreen() {
                         numberOfLines={5}
                         multiline={true}
                         placeholder='Se porta muy bien, le gusta jugar y estar en companía. Se adapta muy fácil a otros animales'
+                        placeholderTextColor='gray'
                         onChangeText={(value) => handleInputChange('about', value)}
                     />
                 </View>
