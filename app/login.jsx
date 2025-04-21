@@ -1,108 +1,217 @@
-import { View, Text, Image, TextInput, TouchableOpacity, Alert, Pressable } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, Image, TextInput, TouchableOpacity, Alert, Pressable, ActivityIndicator } from 'react-native'
+import React, { useState, useEffect } from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { StatusBar } from 'expo-status-bar';
-import { Octicons } from '@expo/vector-icons';
-import { supabase } from '../lib/supabase';
+import { Octicons, AntDesign, Ionicons } from '@expo/vector-icons';
 import Loading from '../components/Loading';
 import CustomKeyboardView from '../components/CustomKeyboardView';
 import { useRouter } from 'expo-router';
-import WelcomeAnimation from '../components/WelcomeAnimation';
 import ScreenWrapper from '../components/ScreenWrapper';
+import { useAuth } from '../context/AuthContext';
+import { useFonts } from 'expo-font';
+
 
 export default function SignIn() {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [localLoading, setLocalLoading] = useState(false);
+    const [forgotLoading, setForgotLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
+    const [showPassword, setShowPassword] = useState(false);
+    
+    // Cargar la fuente personalizada
+    const [fontsLoaded] = useFonts({
+        'Barriecito': require('../assets/fonts/Barriecito-Regular.ttf'),
+    });
 
-    const [email, setEmail] = useState('')
-    const [password, setPassword] = useState('')
-    const [loading, setLoading] = useState(false);
-
+    const { signInWithEmail, signInWithGoogle, resetPassword, loading: authLoading } = useAuth();
     const router = useRouter();
 
+    // Validar entradas
+    const validateInputs = () => {
+        if (!email.trim()) {
+            Alert.alert('Error', 'Por favor ingresa tu email');
+            return false;
+        }
+        if (!password.trim()) {
+            Alert.alert('Error', 'Por favor ingresa tu contraseña');
+            return false;
+        }
+        return true;
+    };
+
+    // Iniciar sesión con email y contraseña
     const onSubmitSignIn = async () => {
-        setLoading(true)
-        const { data: { session }, error } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-        })
-        //console.log('session: ', session)
-        if (error) Alert.alert(error.message)
-        setLoading(false)
-    }
+        if (!validateInputs()) return;
+        
+        setLocalLoading(true);
+        const { success, error } = await signInWithEmail(email, password);
+        setLocalLoading(false);
+        
+        if (!success) {
+            Alert.alert('Error de inicio de sesión', error || 'No se pudo iniciar sesión. Inténtalo nuevamente.');
+        }
+    };
+    
+    // Iniciar sesión con Google
+    const handleGoogleSignIn = async () => {
+        setGoogleLoading(true);
+        await signInWithGoogle();
+        setGoogleLoading(false);
+    };
+    
+    // Recuperar contraseña
+    const handleForgotPassword = async () => {
+        if (!email.trim()) {
+            Alert.alert('Error', 'Por favor ingresa tu email para recuperar tu contraseña');
+            return;
+        }
+        
+        setForgotLoading(true);
+        const { success, error } = await resetPassword(email);
+        setForgotLoading(false);
+        
+        if (success) {
+            Alert.alert(
+                'Recuperación de contraseña', 
+                'Se ha enviado un correo con instrucciones para recuperar tu contraseña.'
+            );
+        } else {
+            Alert.alert(
+                'Error', 
+                error || 'No se pudo enviar el correo de recuperación. Inténtalo nuevamente.'
+            );
+        }
+    };
 
     return (
-        <ScreenWrapper bg={'#d9f99d'}>
+        <ScreenWrapper bg={'#f4f7f8'}>
             <CustomKeyboardView>
                 <StatusBar style='dark' />
-                <View style={{ paddingTop: hp(4), paddingHorizontal: wp(5) }} className="flex-1 gap-24">
-                    <View className="items-center">
-                        <WelcomeAnimation 
-                            size={hp(38)} 
-                            source={require('../assets/images/catsintro.json')}
-                        />
+                <View style={{ paddingTop: hp(2), paddingHorizontal: wp(5) }} className="flex-1">
+                    {/* Encabezado */}
+                    <View className="items-center justify-center mt-6 mb-6">
+                        <Text style={{ 
+                            fontSize: hp(4.5), 
+                            fontFamily: fontsLoaded ? 'Barriecito' : undefined,
+                            color: '#059669',
+                            letterSpacing: 0.5
+                        }} 
+                        className="text-center">
+                            Adopción Responsable
+                        </Text>
+                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-2">
+                            Encuentra y adopta a tu compañero ideal
+                        </Text>
                     </View>
 
-                    <View className="gap-10">
-                        <View className="gap-4">
-                            <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                <Octicons name='mail' size={hp(2.7)} color="gray" />
-                                <TextInput
-                                    onChangeText={(text) => setEmail(text)}
-                                    value={email}
-                                    style={{ fontSize: hp(2) }}
-                                    className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                    placeholder='Email'
-                                    autoCapitalize={'none'}
-                                    placeholderTextColor={'gray'}
+                    {/* Formulario */}
+                    <View className="mt-4">
+                        <Text style={{ fontSize: hp(2.2) }} className="font-semibold text-neutral-700 mb-4">
+                            Inicia sesión para continuar
+                        </Text>
+                        
+                        {/* Campo de email */}
+                        <View style={{ height: hp(7), marginBottom: hp(2) }} className="flex-row gap-3 px-4 bg-neutral-100 items-center rounded-2xl border border-gray-200">
+                            <Ionicons name='mail-outline' size={hp(2.5)} color="#64748b" />
+                            <TextInput
+                                onChangeText={(text) => setEmail(text)}
+                                value={email}
+                                style={{ fontSize: hp(2) }}
+                                className="flex-1 font-medium text-neutral-800"
+                                placeholder='Correo electrónico'
+                                autoCapitalize={'none'}
+                                placeholderTextColor={"#94a3b8"}
+                                keyboardType="email-address"
+                            />
+                        </View>
+                        
+                        {/* Campo de contraseña */}
+                        <View style={{ height: hp(7), marginBottom: hp(1) }} className="flex-row gap-3 px-4 bg-neutral-100 items-center rounded-2xl border border-gray-200">
+                            <Ionicons name='lock-closed-outline' size={hp(2.5)} color="#64748b" />
+                            <TextInput
+                                onChangeText={(text) => setPassword(text)}
+                                value={password}
+                                style={{ fontSize: hp(2) }}
+                                className="flex-1 font-medium text-neutral-800"
+                                placeholder='Contraseña'
+                                secureTextEntry={!showPassword}
+                                placeholderTextColor={"#94a3b8"}
+                            />
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+                                <Ionicons 
+                                    name={showPassword ? 'eye-off-outline' : 'eye-outline'} 
+                                    size={hp(2.5)} 
+                                    color="#64748b" 
                                 />
+                            </TouchableOpacity>
+                        </View>
+                        
+                        {/* Olvidé mi contraseña */}
+                        <TouchableOpacity onPress={() => router.push('/reset-password')}>
+                            <View className="flex-row justify-end items-center mb-5">
+                                <Text style={{ fontSize: hp(1.7) }} className="font-medium text-right text-cyan-600">
+                                    ¿Olvidaste tu contraseña?
+                                </Text>
                             </View>
-                            <View className="gap-3">
-                                <View style={{ height: hp(7) }} className="flex-row gap-4 px-4 bg-lime-100 items-center rounded-xl">
-                                    <Octicons name='lock' size={hp(2.7)} color="gray" />
-                                    <TextInput
-                                        onChangeText={(text) => setPassword(text)}
-                                        value={password}
-                                        style={{ fontSize: hp(2) }}
-                                        className="flex-1 font-semibold text-neutral-700 first-letter:lowercase"
-                                        placeholder='Contraseña'
-                                        secureTextEntry
-                                        placeholderTextColor={'gray'}
-                                    />
-                                </View>
-                                <Text style={{ fontSize: hp(1.8) }} className="font-semibold text-right text-yellow-500">¿Olvidaste tu contraseña?</Text>
-                            </View>
+                        </TouchableOpacity>
 
-                            <View>
-                                {
-                                    loading ? (
-                                        <View className="flex-row justify-center">
-                                            <Loading size={hp(8.5)} aspectR={1} />
-                                        </View>
-                                    ) : (
-                                        <View>
-                                            <TouchableOpacity
-                                                style={{ height: hp(5.5) }}
-                                                className="bg-lime-600 rounded-xl justify-center items-center"
-                                                onPress={onSubmitSignIn}
-                                            >
-                                                <Text style={{ fontSize: hp(2.7) }} className="text-white font-bold tracking-wider">
-                                                    Iniciar Sesión
-                                                </Text>
-                                            </TouchableOpacity>
-                                        </View>
-                                    )
-                                }
-                            </View>
-
-                            <View className="flex-row justify-center gap-2">
-                                <Text style={{ fontSize: hp(1.8) }} className="font-semibold text-neutral-500">¿No tienes una cuenta?</Text>
-                                <Pressable
-                                    onPress={() => router.push('signUp')}
-                                >
-                                    <Text style={{ fontSize: hp(1.8) }} className="font-bold text-lime-700">Crear cuenta</Text>
-                                </Pressable>
-                            </View>
-
-                            
+                        {/* Botón de inicio de sesión */}
+                        <TouchableOpacity
+                            style={{ height: hp(6.5) }}
+                            className="bg-emerald-600 rounded-2xl justify-center items-center mb-4"
+                            onPress={onSubmitSignIn}
+                            disabled={localLoading || authLoading}
+                        >
+                            {(localLoading || authLoading) ? (
+                                <ActivityIndicator size="small" color="white" />
+                            ) : (
+                                <Text style={{ fontSize: hp(2.2) }} className="text-white font-bold">
+                                    Iniciar Sesión
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+                        
+                        {/* Separador */}
+                        <View className="flex-row items-center justify-between my-4">
+                            <View className="flex-1 h-0.5 bg-gray-200" />
+                            <Text className="mx-4 text-gray-500 font-medium">O</Text>
+                            <View className="flex-1 h-0.5 bg-gray-200" />
+                        </View>
+                        
+                        {/* Botón de Google */}
+                        <TouchableOpacity 
+                            style={{ height: hp(6.5) }} 
+                            className="border border-gray-300 bg-white rounded-2xl justify-center items-center flex-row mb-6"
+                            onPress={handleGoogleSignIn}
+                            disabled={googleLoading}
+                        >
+                            {googleLoading ? (
+                                <ActivityIndicator size="small" color="#4285F4" style={{marginRight: 10}} />
+                            ) : (
+                                <Image 
+                                    source={require('../assets/images/google-icon.png')} 
+                                    style={{width: hp(2.5), height: hp(2.5), marginRight: 12}} 
+                                    resizeMode="contain" 
+                                />
+                            )}
+                            <Text style={{ fontSize: hp(2) }} className="font-medium text-neutral-700">
+                                Iniciar con Google
+                            </Text>
+                        </TouchableOpacity>
+                        
+                        {/* Footer - Link a registro */}
+                        <View className="flex-row justify-center mt-2">
+                            <Text style={{ fontSize: hp(1.8) }} className="text-neutral-600">
+                                ¿No tienes una cuenta?
+                            </Text>
+                            <Pressable
+                                onPress={() => router.push('signUp')}
+                            >
+                                <Text style={{ fontSize: hp(1.8) }} className="font-bold text-emerald-700 ml-2">
+                                    Regístrate
+                                </Text>
+                            </Pressable>
                         </View>
                     </View>
                 </View>

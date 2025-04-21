@@ -1,102 +1,257 @@
-import { View, Text, TouchableOpacity, Alert, Pressable } from 'react-native'
-import React from 'react'
-import ScreenWrapper from '../../components/ScreenWrapper'
-import { AntDesign, Ionicons } from '@expo/vector-icons';
-import { useAuth } from '../../context/AuthContext'
+import React from 'react';
+import { View, Text, ScrollView, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-native-responsive-screen';
+import { MaterialIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import Header from '../../components/Header';
-import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
-import { supabase } from '../../lib/supabase';
-import Avatar from '../../components/Avatar';
+
+// Componentes
+import ProfileHeader from '../../components/profile/ProfileHeader';
+import ProfileStats from '../../components/profile/ProfileStats';
+import ProfileMenuItem from '../../components/profile/ProfileMenuItem';
+import LogoutButton from '../../components/profile/LogoutButton';
+import ProfileForm from '../../components/profile/ProfileForm';
+import LogoutConfirmModal from '../../components/profile/LogoutConfirmModal';
+
+// Hooks
+import { useProfile } from '../../hooks/useProfile';
+
+// Constantes
+import { COLORS } from '../../constants/colors';
 
 export default function Profile() {
-
-    const onLogout = async () => {
-        //setAuth(null);
-        const { error } = await supabase.auth.signOut();
-        if (error) {
-            Alert.alert('Sign Out', 'Error al cerrar sesión');
-        }
-    }
-
-    const { user, setAuth } = useAuth();
-    console.log('user: ', user);
     const router = useRouter();
-    const handleLogout = async () => {
-        Alert.alert('Confirma', 'Estás seguro que quieres cerrar sesión?', [
-            {
-                text: 'Cancelar',
-                onPress: () => console.log('modal cancel'),
-                style: 'cancel'
-            },
-            {
-                text: 'Cerrar Sesión',
-                onPress: () => onLogout(),
-                style: 'destructive'
-            }
-        ])
-    }
+    const {
+        profile,
+        userProfile,
+        editMode,
+        setEditMode,
+        uploadingAvatar,
+        logoutModalVisible,
+        setLogoutModalVisible,
+        loading,
+        handleProfileChange,
+        handleSelectImage,
+        handleSaveProfile,
+        handleLogout,
+        confirmLogout,
+        cancelEdit
+    } = useProfile();
+
+    // Estadísticas de ejemplo (podrían venir de la API)
+    const userStats = {
+        adoptions: 2,
+        favorites: profile?.favorites_count || 0,
+        posts: 5
+    };
 
     return (
-        <ScreenWrapper bg={'white'}>
-            <UserHeader user={user} router={router} handleLogout={handleLogout} />
-        </ScreenWrapper>
-    )
-}
-
-const UserHeader = ({ user, router, handleLogout }) => {
-    return (
-        <View style={{ flex: 1, backgroundColor: 'white', paddingHorizontal: hp(2) }}>
-            <View>
-                <Header title="Mi Perfil" mb={30} />
-                <TouchableOpacity onPress={handleLogout} className='absolute right-0 p-2 rounded-lg bg-red-200'>
-                    <AntDesign name="logout" size={20} color="red" />
-                </TouchableOpacity>
-            </View>
-
-            <View className='flex-1'>
-                <View className='gap-4'>
-                    <View className='self-center' style={{ height: hp(12), width: hp(12) }}>
-                        <Avatar
-                            uri={user?.image}
-                            size={hp(12)}
-                        />
-                        <Pressable
-                            className='absolute p-2 bottom-0 -right-3 bg-white rounded-full shadow-md'
-                            onPress={() => router.push('editProfile')}
+        <SafeAreaView style={styles.container}>
+            <ScrollView
+                showsVerticalScrollIndicator={false}
+                contentContainerStyle={styles.scrollContent}
+            >
+                {editMode ? (
+                    // Modo de edición
+                    <ProfileForm
+                        profile={userProfile}
+                        onChange={handleProfileChange}
+                        onCancel={cancelEdit}
+                        onSave={handleSaveProfile}
+                        loading={loading}
+                    />
+                ) : (
+                    // Modo visualización
+                    <>
+                        {/* Header con título */}
+                        <View style={styles.headerContainer}>
+                            <Text style={styles.headerTitle}>Mi perfil</Text>
+                        </View>
+                        {/* Cabecera con avatar y datos básicos */}
+                        <ProfileHeader
+                            profile={profile}
+                            uploadingAvatar={uploadingAvatar}
+                            onEditAvatar={handleSelectImage}
                         >
-                            <AntDesign name="edit" size={24} color="gray" />
-                        </Pressable>
-                    </View>
+                            {/* Descripción del usuario */}
+                            {profile?.description && (
+                                <View style={styles.bioContainer}>
+                                    <Text style={styles.bioText}>
+                                        {profile.description}
+                                    </Text>
+                                </View>
+                            )}
+                        </ProfileHeader>
 
-                    <View className='items-center gap-1'>
-                        <Text className='font-semibold text-neutral-600' style={{ fontSize: hp(2.8) }}>{user && user.full_name}</Text>
-                        <Text className='font-semibold text-neutral-500' style={{ fontSize: hp(1.6) }}>{user && user.address}</Text>
-                    </View>
 
-                    <View className='gap-2'>
-                        <View className='flex flex-row items-center gap-2'>
-                            <Ionicons name="mail-outline" size={20} color="black" />
-                            <Text className='font-semibold text-neutral-500' style={{ fontSize: hp(1.6) }}>{user && user.email}</Text>
+                        {/* Estadísticas del perfil */}
+                        <ProfileStats stats={userStats} />
+
+                        {/* Sección de información personal */}
+                        <View style={styles.sectionContainer}>
+                            <View style={styles.sectionHeader}>
+                                <Text style={styles.sectionTitle}>Información personal</Text>
+                                <MaterialIcons
+                                    name="edit"
+                                    size={20}
+                                    color={COLORS.primary}
+                                    onPress={() => setEditMode(true)}
+                                />
+                            </View>
+
+                            {/* Teléfono */}
+                            <View style={styles.infoItem}>
+                                <View style={styles.infoIconContainer}>
+                                    <MaterialIcons name="phone" size={20} color={COLORS.primary} />
+                                </View>
+                                <View style={styles.infoContent}>
+                                    <Text style={styles.infoLabel}>Teléfono</Text>
+                                    <Text style={styles.infoText}>
+                                        {profile?.phone || 'No especificado'}
+                                    </Text>
+                                </View>
+                            </View>
+
+                            {/* Ubicación */}
+                            <View style={styles.infoItem}>
+                                <View style={styles.infoIconContainer}>
+                                    <MaterialIcons name="place" size={20} color={COLORS.primary} />
+                                </View>
+                                <View style={styles.infoContent}>
+                                    <Text style={styles.infoLabel}>Ubicación</Text>
+                                    <Text style={styles.infoText}>
+                                        {profile?.location || 'No especificada'}
+                                    </Text>
+                                </View>
+                            </View>
                         </View>
 
-                        {
-                            user && user.username && (
-                                <View className='flex flex-row items-center gap-2'>
-                                    <AntDesign name="user" size={20} color="black" />
-                                    <Text className='font-semibold text-neutral-500' style={{ fontSize: hp(1.6) }}>{user && user.username}</Text>
-                                </View>
-                            )
-                        }
+                        {/* Menú de opciones */}
+                        <View style={styles.sectionContainer}>
+                            <Text style={styles.sectionTitle}>Opciones</Text>
 
-                        {
-                            user && user.bio && (
-                                <Text className='font-semibold text-neutral-500' style={{ fontSize: hp(1.6) }}>{user && user.bio}</Text>
-                            )
-                        }
-                    </View>
-                </View>
-            </View>
-        </View>
-    )
+                            <ProfileMenuItem
+                                icon={<MaterialIcons name="settings" size={20} color={COLORS.primary} />}
+                                title="Configurar mi perfil"
+                                onPress={() => router.push('/settings')}
+                            />
+
+                            <ProfileMenuItem
+                                icon={<MaterialIcons name="pets" size={20} color={COLORS.primary} />}
+                                title="Mis adopciones"
+                                onPress={() => router.push('/my-adoptions')}
+                            />
+
+                            <ProfileMenuItem
+                                icon={<FontAwesome name="paw" size={20} color={COLORS.primary} />}
+                                title="Mis mascotas en adopción"
+                                onPress={() => router.push('/my-pets-for-adoption')}
+                            />
+                            
+                            <ProfileMenuItem
+                                icon={<FontAwesome name="heart" size={18} color={COLORS.primary} />}
+                                title="Mis favoritos"
+                                onPress={() => router.push('/favorites')}
+                            />
+                        </View>
+
+                        {/* Botón de cerrar sesión */}
+                        <LogoutButton onPress={handleLogout} />
+
+                        {/* Espaciador para el final del scroll */}
+                        <View style={styles.bottomSpacer} />
+                    </>
+                )}
+            </ScrollView>
+
+            {/* Modal de confirmación de cierre de sesión */}
+            <LogoutConfirmModal
+                visible={logoutModalVisible}
+                onConfirm={confirmLogout}
+                onCancel={() => setLogoutModalVisible(false)}
+            />
+        </SafeAreaView>
+    );
 }
+
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+        backgroundColor: COLORS.background,
+    },
+    scrollContent: {
+        paddingHorizontal: wp(4),
+        paddingTop: hp(2),
+    },
+    headerContainer: {
+        marginBottom: hp(2),
+        paddingBottom: hp(1),
+    },
+    headerTitle: {
+        fontSize: hp(2.8),
+        fontWeight: 'bold',
+        color: COLORS.text,
+        textAlign: 'center',
+    },
+    sectionContainer: {
+        backgroundColor: COLORS.white,
+        borderRadius: 12,
+        padding: hp(2.5),
+        marginBottom: hp(2.5),
+        shadowColor: COLORS.shadow,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 3,
+        elevation: 2,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        marginBottom: hp(1.5),
+    },
+    sectionTitle: {
+        fontSize: hp(2),
+        fontWeight: 'bold',
+        color: COLORS.text,
+        marginBottom: hp(1.5),
+    },
+    bioContainer: {
+        marginTop: hp(0.5),
+        paddingHorizontal: wp(10),
+    },
+    bioText: {
+        fontSize: hp(1.6),
+        color: COLORS.textLight,
+        textAlign: 'center',
+        fontStyle: 'italic',
+    },
+    infoItem: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: hp(1.5),
+    },
+    infoIconContainer: {
+        width: 40,
+        height: 40,
+        borderRadius: 20,
+        backgroundColor: COLORS.primaryLight,
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginRight: 15,
+    },
+    infoContent: {
+        flex: 1,
+    },
+    infoLabel: {
+        fontSize: hp(1.4),
+        color: COLORS.textLight,
+    },
+    infoText: {
+        fontSize: hp(1.6),
+        color: COLORS.text,
+    },
+    bottomSpacer: {
+        height: hp(10),
+    },
+});
