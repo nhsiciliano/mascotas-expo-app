@@ -15,6 +15,7 @@ export const usePetDetail = (petId) => {
   const [loadingInitial, setLoadingInitial] = useState(true);
   const [loadingAdoptionRequest, setLoadingAdoptionRequest] = useState(false);
   const [petData, setPetData] = useState(null);
+  const [isAvailable, setIsAvailable] = useState(true); // Indicador de si la mascota está disponible
 
   const { user, profile } = useAuth();
 
@@ -160,6 +161,10 @@ export const usePetDetail = (petId) => {
             label: pet.size || 'No especificado'
           }
         ];
+
+        // Determinar si la mascota está disponible para adopción
+        const isPetAvailable = !pet.adopted_by && pet.status !== 'adoptada';
+        setIsAvailable(isPetAvailable);
 
         // Formato final de los datos de la mascota
         const processedPet = {
@@ -412,6 +417,7 @@ export const usePetDetail = (petId) => {
     loading,
     loadingInitial,
     loadingAdoptionRequest,
+    isAvailable, // Incluir el estado de disponibilidad
     toggleFavorite,
     requestAdoption
   };

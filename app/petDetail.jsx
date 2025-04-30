@@ -30,6 +30,7 @@ export default function PetDetailScreen() {
     loading,
     loadingInitial,
     loadingAdoptionRequest,
+    isAvailable,
     toggleFavorite,
     requestAdoption
   } = usePetDetail(petId);
@@ -115,11 +116,13 @@ export default function PetDetailScreen() {
         />
       </ScrollView>
 
-      {/* Botón de adopción */}
-      <AdoptButton
-        onPress={requestAdoption}
-        loading={loadingAdoptionRequest}
-      />
+      {/* Botón de adopción - solo visible si la mascota está disponible */}
+      {isAvailable && (
+        <AdoptButton
+          onPress={requestAdoption}
+          loading={loadingAdoptionRequest}
+        />
+      )}
     </SafeAreaView>
   );
 }

@@ -6,21 +6,8 @@ import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-nat
 import { Ionicons } from '@expo/vector-icons'
 import { useAuth } from '../context/AuthContext'
 import { supabase } from '../lib/supabase'
+import { COLORS } from '../constants/colors'
 
-// Colors matching the rest of the app
-const COLORS = {
-  primary: '#24B24C',
-  primaryDark: '#1E9D41',
-  primaryLight: '#E8F5EA',
-  secondary: '#34CCA9',
-  inactive: '#7E7E7E',
-  white: '#FFFFFF',
-  background: '#F9F9F9',
-  shadow: '#000000',
-  text: '#333333',
-  textLight: '#777777',
-  placeholder: '#666666',
-}
 
 export default function MyAdoptions() {
   const router = useRouter()
