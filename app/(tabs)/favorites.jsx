@@ -6,6 +6,7 @@ import { heightPercentageToDP as hp, widthPercentageToDP as wp } from 'react-nat
 // Componentes
 import FavoritePetCard from '../../components/favorites/FavoritePetCard';
 import EmptyFavorites from '../../components/favorites/EmptyFavorites';
+import HeaderFavorites from '../../components/favorites/HeaderFavorites';
 
 // Custom hooks
 import { useFavorites } from '../../hooks/useFavorites';
@@ -65,14 +66,7 @@ export default function Favorites() {
 
   return (
     <SafeAreaView style={styles.container}>
-        <View style={styles.header}>
-          <Text style={styles.title}>Mis Favoritos</Text>
-          {favorites.length > 0 && (
-            <Text style={styles.countText}>
-              {favorites.length} {favorites.length === 1 ? 'mascota' : 'mascotas'}
-            </Text>
-          )}
-        </View>
+        <HeaderFavorites favoriteCount={favorites.length} />
 
         {loading ? (
           <View style={styles.loadingContainer}>

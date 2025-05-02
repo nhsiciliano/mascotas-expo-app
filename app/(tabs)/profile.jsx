@@ -15,6 +15,7 @@ import LogoutConfirmModal from '../../components/profile/LogoutConfirmModal';
 
 // Hooks
 import { useProfile } from '../../hooks/useProfile';
+import { useProfileStats } from '../../hooks/useProfileStats';
 
 // Constantes
 import { COLORS } from '../../constants/colors';
@@ -38,12 +39,8 @@ export default function Profile() {
         cancelEdit
     } = useProfile();
 
-    // Estadísticas de ejemplo (podrían venir de la API)
-    const userStats = {
-        adoptions: 2,
-        favorites: profile?.favorites_count || 0,
-        posts: 5
-    };
+    // Obtener estadísticas reales del usuario
+    const { stats: userStats, loading: loadingStats } = useProfileStats();
 
     return (
         <SafeAreaView style={styles.container}>
@@ -85,7 +82,7 @@ export default function Profile() {
 
 
                         {/* Estadísticas del perfil */}
-                        <ProfileStats stats={userStats} />
+                        <ProfileStats stats={userStats} loading={loadingStats} />
 
                         {/* Sección de información personal */}
                         <View style={styles.sectionContainer}>

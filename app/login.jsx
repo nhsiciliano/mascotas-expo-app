@@ -1,9 +1,8 @@
 import { View, Text, Image, TextInput, TouchableOpacity, Alert, Pressable, ActivityIndicator } from 'react-native'
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { StatusBar } from 'expo-status-bar';
-import { Octicons, AntDesign, Ionicons } from '@expo/vector-icons';
-import Loading from '../components/Loading';
+import { Ionicons } from '@expo/vector-icons';
 import CustomKeyboardView from '../components/CustomKeyboardView';
 import { useRouter } from 'expo-router';
 import ScreenWrapper from '../components/ScreenWrapper';

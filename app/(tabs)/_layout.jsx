@@ -1,19 +1,8 @@
 import { Tabs, useRouter } from 'expo-router';
 import { View, Text, TouchableOpacity } from 'react-native';
-import { MaterialIcons, FontAwesome5, FontAwesome, MaterialCommunityIcons } from '@expo/vector-icons';
+import { MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-
-// Main colors for the app
-const COLORS = {
-  primary: '#24B24C',
-  primaryDark: '#1E9D41',
-  primaryLight: '#E8F5EA',
-  secondary: '#34CCA9',
-  inactive: '#7E7E7E',
-  white: '#FFFFFF',
-  background: '#F9F9F9',
-  shadow: '#000000',
-};
+import { COLORS } from '../../constants/colors';
 
 // Create a reusable tab button component with label
 function TabButton({ label, icon, focused, onPress, ...props }) {

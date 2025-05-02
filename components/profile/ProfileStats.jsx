@@ -1,26 +1,40 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, ActivityIndicator } from 'react-native';
 import { heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { COLORS } from '../../constants/colors';
 
 /**
  * Componente para mostrar estadísticas del perfil de usuario
+ * @param {Object} stats - Estadísticas del usuario
+ * @param {boolean} loading - Indica si las estadísticas están cargando
  */
-const ProfileStats = ({ stats = { adoptions: 0, favorites: 0, posts: 0 } }) => {
+const ProfileStats = ({ stats = { adoptions: 0, favorites: 0, posts: 0 }, loading = false }) => {
   return (
     <View style={styles.statsContainer}>
       <View style={styles.statItem}>
-        <Text style={styles.statNumber}>{stats.adoptions}</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        ) : (
+          <Text style={styles.statNumber}>{stats.adoptions}</Text>
+        )}
         <Text style={styles.statLabel}>Adopciones</Text>
       </View>
       
       <View style={[styles.statItem, styles.statBorder]}>
-        <Text style={styles.statNumber}>{stats.favorites}</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        ) : (
+          <Text style={styles.statNumber}>{stats.favorites}</Text>
+        )}
         <Text style={styles.statLabel}>Favoritos</Text>
       </View>
       
       <View style={styles.statItem}>
-        <Text style={styles.statNumber}>{stats.posts}</Text>
+        {loading ? (
+          <ActivityIndicator size="small" color={COLORS.primary} />
+        ) : (
+          <Text style={styles.statNumber}>{stats.posts}</Text>
+        )}
         <Text style={styles.statLabel}>Publicaciones</Text>
       </View>
     </View>

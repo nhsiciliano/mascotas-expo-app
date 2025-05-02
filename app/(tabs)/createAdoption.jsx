@@ -5,7 +5,8 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, ActivityIndicator
 const PLACEHOLDER_COLOR = '#666666';
 import { useRouter } from 'expo-router';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
+// Componentes personalizados
+import HeaderCreateAdoption from '../../components/createAdoption/HeaderCreateAdoption';
 import { COLORS } from '../../constants/colors';
 
 // Componentes
@@ -68,20 +69,8 @@ export default function CreateAdoption() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Cabecera */}
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => router.back()}
-          disabled={isSubmitting}
-        >
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.text} />
-        </TouchableOpacity>
-        
-        <Text style={styles.headerTitle}>Publicar Adopción</Text>
-        
-        <View style={{ width: 40 }} />
-      </View>
+      {/* Cabecera usando el componente reutilizable */}
+      <HeaderCreateAdoption isSubmitting={isSubmitting} />
       
       {/* Contenido principal */}
       <KeyboardAvoidingView 
