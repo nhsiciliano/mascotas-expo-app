@@ -37,6 +37,15 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "6e008fa8-2edd-4e32-ac90-664093fe9390"
+      }
+    },
+    "owner": "nhsiciliano"
   }
 }
