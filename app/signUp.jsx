@@ -24,6 +24,7 @@ export default function SignUp() {
     // Cargar la fuente personalizada
     const [fontsLoaded] = useFonts({
         'Barriecito': require('../assets/fonts/Barriecito-Regular.ttf'),
+        'SourGummy': require('../assets/fonts/SourGummy-font.ttf'),
     });
 
     const { signUpWithEmail, signInWithGoogle, loading: authLoading } = useAuth();
@@ -124,15 +125,15 @@ export default function SignUp() {
                     <View className="items-center justify-center mt-6 mb-6">
                         <Text style={{ 
                             fontSize: hp(4.5), 
-                            fontFamily: fontsLoaded ? 'Barriecito' : undefined,
+                            fontFamily: fontsLoaded ? 'SourGummy' : undefined,
                             color: '#059669',
                             letterSpacing: 0.5
                         }} 
                         className="text-center">
                             Adopción Responsable
                         </Text>
-                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-2">
-                            Crea tu cuenta para adoptar
+                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-6">
+                            Crea tu cuenta para continuar
                         </Text>
                     </View>
 
@@ -232,30 +233,6 @@ export default function SignUp() {
                                 </Text>
                             </TouchableOpacity>
                         )}
-                        
-                        {/* Separador */}
-                        <View className="flex-row items-center justify-between my-3">
-                            <View className="flex-1 h-0.5 bg-gray-200" />
-                            <Text className="mx-4 text-gray-500 font-medium">O</Text>
-                            <View className="flex-1 h-0.5 bg-gray-200" />
-                        </View>
-                        
-                        {/* Botón de Google */}
-                        <TouchableOpacity 
-                            style={{ height: hp(6.5) }} 
-                            className="border border-gray-300 bg-white rounded-2xl justify-center items-center flex-row mb-4"
-                            onPress={handleGoogleSignUp}
-                            disabled={googleLoading}
-                        >
-                            {googleLoading ? (
-                                <ActivityIndicator size="small" color="#4285F4" style={{marginRight: 10}} />
-                            ) : (
-                                <AntDesign name="google" size={hp(2.5)} color="#4285F4" style={{marginRight: 12}} />
-                            )}
-                            <Text style={{ fontSize: hp(2) }} className="font-medium text-neutral-700">
-                                Registrarse con Google
-                            </Text>
-                        </TouchableOpacity>
                         
                         {/* Footer - Link a login */}
                         <View className="flex-row justify-center mt-2">

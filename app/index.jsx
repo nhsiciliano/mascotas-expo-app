@@ -42,10 +42,12 @@ export default function IndexPage() {
                     setTimeout(() => {
                         console.log('Redirigiendo a home a través de timeout...');
                         router.replace('/home');
-                    }, 500); // Pequeño retraso para permitir que el contexto se actualice
+                    }, 2000); // Pequeño retraso para permitir que el contexto se actualice
                 } else {
-                    console.log('Sin sesión activa, redirigiendo a welcome...');
-                    router.replace('/welcome');
+                    setTimeout(() => {
+                        console.log('Sin sesión activa, redirigiendo a welcome...');
+                        router.replace('/welcome');
+                    }, 2000); // Pequeño retraso para permitir que el contexto se actualice
                 }
             } catch (error) {
                 console.error('Error inesperado:', error);

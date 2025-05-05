@@ -21,6 +21,7 @@ export default function SignIn() {
     // Cargar la fuente personalizada
     const [fontsLoaded] = useFonts({
         'Barriecito': require('../assets/fonts/Barriecito-Regular.ttf'),
+        'SourGummy': require('../assets/fonts/SourGummy-font.ttf'),
     });
 
     const { signInWithEmail, signInWithGoogle, resetPassword, loading: authLoading } = useAuth();
@@ -88,25 +89,30 @@ export default function SignIn() {
             <CustomKeyboardView>
                 <StatusBar style='dark' />
                 <View style={{ paddingTop: hp(2), paddingHorizontal: wp(5) }} className="flex-1">
+                    {/* Logo de la app */}
+                    <View className="items-center justify-center mt-4 mb-2">
+                        <Image
+                            source={require('../assets/icons/splash-icon-dark.png')}
+                            style={{ width: hp(12), height: hp(12), resizeMode: 'contain' }}
+                        />
+                    </View>
+                    
                     {/* Encabezado */}
-                    <View className="items-center justify-center mt-6 mb-6">
+                    <View className="items-center justify-center mb-6">
                         <Text style={{ 
-                            fontSize: hp(4.5), 
-                            fontFamily: fontsLoaded ? 'Barriecito' : undefined,
+                            fontSize: hp(4), 
+                            fontFamily: fontsLoaded ? 'SourGummy' : undefined,
                             color: '#059669',
                             letterSpacing: 0.5
                         }} 
                         className="text-center">
                             Adopción Responsable
                         </Text>
-                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-2">
-                            Encuentra y adopta a tu compañero ideal
-                        </Text>
                     </View>
 
                     {/* Formulario */}
-                    <View className="mt-4">
-                        <Text style={{ fontSize: hp(2.2) }} className="font-semibold text-neutral-700 mb-4">
+                    <View className="mt-2">
+                        <Text style={{ fontSize: hp(2.1) }} className="font-normal text-neutral-700 mb-6 text-center">
                             Inicia sesión para continuar
                         </Text>
                         

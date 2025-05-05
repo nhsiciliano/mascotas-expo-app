@@ -1,4 +1,4 @@
-import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Modal, StyleSheet, Alert } from 'react-native'
+import { View, Text, TextInput, TouchableOpacity, ActivityIndicator, Modal, StyleSheet, Alert, Image } from 'react-native'
 import React, { useState } from 'react'
 import { widthPercentageToDP as wp, heightPercentageToDP as hp } from 'react-native-responsive-screen';
 import { StatusBar } from 'expo-status-bar';
@@ -13,53 +13,53 @@ export default function ResetPassword() {
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [successModalVisible, setSuccessModalVisible] = useState(false);
-    
+
     const router = useRouter();
     const { resetPassword } = useAuth();
-    
+
     // Cargar la fuente personalizada
     const [fontsLoaded] = useFonts({
         'Barriecito': require('../assets/fonts/Barriecito-Regular.ttf'),
     });
-    
+
     // Validar email
     const isValidEmail = (email) => {
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
         return emailRegex.test(email);
     };
-    
+
     // Enviar solicitud de recuperación
     const handleResetPassword = async () => {
         if (!email.trim()) {
             Alert.alert('Error', 'Por favor ingresa tu email para recuperar tu contraseña');
             return;
         }
-        
+
         if (!isValidEmail(email)) {
             Alert.alert('Error', 'Por favor ingresa un email válido');
             return;
         }
-        
+
         setLoading(true);
         const { success, error } = await resetPassword(email);
         setLoading(false);
-        
+
         if (success) {
             setSuccessModalVisible(true);
         } else {
             Alert.alert(
-                'Error', 
+                'Error',
                 error || 'No se pudo enviar el correo de recuperación. Inténtalo nuevamente.'
             );
         }
     };
-    
+
     // Manejar el cierre del modal
     const handleCloseModal = () => {
         setSuccessModalVisible(false);
         router.replace('/login');
     };
-    
+
     return (
         <ScreenWrapper bg={'#f4f7f8'}>
             {/* Modal de éxito */}
@@ -77,8 +77,8 @@ export default function ResetPassword() {
                                 Hemos enviado un correo a {email} con instrucciones para recuperar tu contraseña.
                             </Text>
                         </View>
-                        
-                        <TouchableOpacity 
+
+                        <TouchableOpacity
                             style={styles.modalButton}
                             onPress={handleCloseModal}
                         >
@@ -87,30 +87,29 @@ export default function ResetPassword() {
                     </View>
                 </View>
             </Modal>
-            
+
             <CustomKeyboardView>
                 <StatusBar style='dark' />
-                <View style={{ paddingTop: hp(4), paddingHorizontal: wp(5) }} className="flex-1">
-                    {/* Botón para volver */}
-                    <TouchableOpacity 
-                        onPress={() => router.back()}
-                        className="w-10 h-10 items-center justify-center rounded-full bg-white shadow-sm"
-                    >
-                        <Ionicons name="arrow-back" size={hp(2.5)} color="#374151" />
-                    </TouchableOpacity>
-                    
+                <View style={{ paddingTop: hp(8), paddingHorizontal: wp(5) }} className="flex-1">
+                    {/* Logo de la app */}
+                    <View className="items-center justify-center mt-4 mb-2">
+                        <Image
+                            source={require('../assets/icons/splash-icon-dark.png')}
+                            style={{ width: hp(14), height: hp(14), resizeMode: 'contain' }}
+                        />
+                    </View>
                     {/* Encabezado */}
                     <View className="items-center justify-center mt-6 mb-12">
-                        <Text style={{ 
-                            fontSize: hp(4), 
-                            fontFamily: fontsLoaded ? 'Barriecito' : undefined,
-                            color: '#0891b2',
+                        <Text style={{
+                            fontSize: hp(4),
+                            fontFamily: fontsLoaded ? 'SourGummy' : undefined,
+                            color: '#059669',
                             letterSpacing: 0.5
-                        }} 
-                        className="text-center">
+                        }}
+                            className="text-center">
                             Recuperar contraseña
                         </Text>
-                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-2">
+                        <Text style={{ fontSize: hp(2) }} className="text-neutral-600 text-center mt-8">
                             Ingresa tu email para recibir instrucciones
                         </Text>
                     </View>
@@ -130,11 +129,11 @@ export default function ResetPassword() {
                                 style={{ flex: 1, fontSize: hp(2) }}
                             />
                         </View>
-                        
+
                         {/* Botón de enviar */}
                         <TouchableOpacity
                             style={{ height: hp(6.5) }}
-                            className="bg-cyan-600 rounded-2xl justify-center items-center mb-4"
+                            className="bg-emerald-600 rounded-2xl justify-center items-center mb-4"
                             onPress={handleResetPassword}
                             disabled={loading}
                         >
@@ -146,9 +145,9 @@ export default function ResetPassword() {
                                 </Text>
                             )}
                         </TouchableOpacity>
-                        
+
                         {/* Volver a login */}
-                        <TouchableOpacity 
+                        <TouchableOpacity
                             onPress={() => router.replace('/login')}
                             className="items-center justify-center mt-4"
                         >

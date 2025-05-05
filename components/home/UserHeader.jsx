@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { widthPercentageToDP as wp } from 'react-native-responsive-screen';
-import { MaterialIcons } from '@expo/vector-icons';
 import Avatar from '../Avatar';
 import { COLORS } from '../../constants/colors';
 
