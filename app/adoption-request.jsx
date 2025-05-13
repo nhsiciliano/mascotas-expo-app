@@ -13,6 +13,9 @@ import RequesterProfile from '../components/adoption-request/RequesterProfile';
 import RequestMessage from '../components/adoption-request/RequestMessage';
 import ActionButtons from '../components/adoption-request/ActionButtons';
 import ChatButton from '../components/adoption-request/ChatButton';
+import AdoptionManagementButtons from '../components/adoption-request/AdoptionManagementButtons';
+import AdoptionSuccessMessage from '../components/adoption-request/AdoptionSuccessMessage';
+import AdoptionCancelledMessage from '../components/adoption-request/AdoptionCancelledMessage';
 
 // Custom hook y constantes
 import useAdoptionRequest from '../hooks/useAdoptionRequest';
@@ -33,8 +36,14 @@ export default function AdoptionRequestScreen() {
     pet,
     requesterProfile,
     handleResponseRequest,
+    handleCompleteAdoption,
+    handleCancelAdoption,
     getPetImage,
     getStatusBadge,
+    showSuccessMessage,
+    showCancelledMessage,
+    handleCloseSuccessMessage,
+    handleCloseCancelledMessage,
   } = useAdoptionRequest(params.id, user);
 
   // Determinar estado visual para el badge
@@ -88,10 +97,35 @@ export default function AdoptionRequestScreen() {
 
           {/* Botón de chat (visible si la solicitud fue aceptada) */}
           {request?.status === 'accepted' && (
-            <ChatButton requestId={request.id} />
+            <>
+              <ChatButton requestId={request.id} />
+              
+              {/* Botones de gestión de adopción (solo para el dueño) */}
+              {request.owner_id === user?.id && (
+                <AdoptionManagementButtons
+                  onConcretar={handleCompleteAdoption}
+                  onDesestimar={handleCancelAdoption}
+                  processing={processing}
+                />
+              )}
+            </>
           )}
 
           <View style={{ height: 30 }} />
+          
+          {/* Modales personalizados para éxito y cancelación */}
+          <AdoptionSuccessMessage
+            visible={showSuccessMessage}
+            onClose={handleCloseSuccessMessage}
+            petName={pet?.name}
+            petImage={getPetImage()}
+          />
+          
+          <AdoptionCancelledMessage
+            visible={showCancelledMessage}
+            onClose={handleCloseCancelledMessage}
+            petName={pet?.name}
+          />
         </ScrollView>
       )}
     </SafeAreaView>

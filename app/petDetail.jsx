@@ -1,7 +1,7 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, ScrollView, TouchableOpacity, ActivityIndicator, Platform, StatusBar } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 
 // Componentes
@@ -21,6 +21,8 @@ import { COLORS } from '../constants/colors';
 export default function PetDetailScreen() {
   const params = useLocalSearchParams();
   const petId = params.id;
+  const isOwner = params.isOwner === 'true'; // Verificar si el usuario es el propietario
+  const insets = useSafeAreaInsets(); // Obtener los insets para conocer la altura del status bar
   
   const {
     petData,
@@ -31,6 +33,7 @@ export default function PetDetailScreen() {
     loadingInitial,
     loadingAdoptionRequest,
     isAvailable,
+    hasRequestedAdoption,
     toggleFavorite,
     requestAdoption
   } = usePetDetail(petId);
@@ -61,14 +64,17 @@ export default function PetDetailScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Barra de navegación */}
-      <View style={styles.navBar}>
+    <View style={styles.container}>
+      {/* Usar StatusBar transparente para que se vea la imagen detrás */}
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
+
+      {/* Barra de navegación flotante */}
+      <View style={[styles.navBar, { top: insets.top + 10 }]}>
         <TouchableOpacity
           style={styles.navButton}
           onPress={handleGoBack}
         >
-          <MaterialIcons name="arrow-back" size={24} color={COLORS.text} />
+          <MaterialIcons name="arrow-back" size={24} color={COLORS.white} />
         </TouchableOpacity>
         
         <FavoriteButton 
@@ -78,14 +84,17 @@ export default function PetDetailScreen() {
         />
       </View>
 
+      {/* Contenido principal en scroll con imagen incorporada */}
       <ScrollView
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
       >
-        {/* Carrusel de fotos */}
+        
+        {/* Carrusel de fotos que cubre toda la parte superior */}
         <TouchableOpacity
-          activeOpacity={0.7} // Hacerlo más reactivo
-          delayPressIn={0} // Eliminar retraso al pulsar
+          activeOpacity={0.7}
+          delayPressIn={0}
           onPress={() => {
             if (petData?.photos?.length > 1) {
               const nextIndex = (currentPhotoIndex + 1) % petData.photos.length;
@@ -96,34 +105,44 @@ export default function PetDetailScreen() {
           <PhotoCarousel
             photos={petData?.photos}
             currentIndex={currentPhotoIndex}
+            fullscreen={true}
           />
         </TouchableOpacity>
 
-        {/* Información básica de la mascota */}
-        <PetInfoCard pet={petData} />
+        {/* Contenedor en forma de tarjeta para el resto del contenido */}
+        <View style={styles.contentCard}>
+          {/* Información básica de la mascota */}
+          <PetInfoCard pet={petData} />
 
-        {/* Características y descripción */}
-        <PetCharacteristics
-          characteristics={petData?.characteristics}
-          description={petData?.description}
-        />
+          {/* Características y descripción */}
+          <PetCharacteristics
+            characteristics={petData?.characteristics}
+            description={petData?.description}
+          />
 
-        {/* Información del propietario */}
-        <OwnerInfo
-          ownerName={petData?.ownerName}
-          ownerAvatar={petData?.ownerAvatar}
-          onContactPress={handleContactOwner}
-        />
+          {/* Información del propietario */}
+          <OwnerInfo
+            ownerName={petData?.ownerName}
+            ownerAvatar={petData?.ownerAvatar}
+            onContactPress={handleContactOwner}
+          />
+          
+          {/* Espacio adicional al final */}
+          <View style={{ height: 70 }} />
+        </View>
       </ScrollView>
 
-      {/* Botón de adopción - solo visible si la mascota está disponible */}
-      {isAvailable && (
-        <AdoptButton
-          onPress={requestAdoption}
-          loading={loadingAdoptionRequest}
-        />
+      {/* Botón de adopción - solo visible si la mascota está disponible y el usuario NO es el propietario */}
+      {isAvailable && !isOwner && (
+        <View style={styles.adoptButtonContainer}>
+          <AdoptButton
+            onPress={requestAdoption}
+            loading={loadingAdoptionRequest}
+            alreadyRequested={hasRequestedAdoption}
+          />
+        </View>
       )}
-    </SafeAreaView>
+    </View>
   );
 }
 
@@ -143,7 +162,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     position: 'absolute',
-    top: 70, // Ajustar la posición vertical para que esté dentro de la zona segura
     left: 15,
     right: 15,
     zIndex: 10,
@@ -152,16 +170,45 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: COLORS.white,
+    backgroundColor: 'rgba(0,0,0,0.3)',  // Fondo semi-transparente para contraste
     justifyContent: 'center',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingHorizontal: 0, // Sin padding horizontal para que la imagen ocupe todo el ancho
+  },
+  contentCard: {
+    backgroundColor: COLORS.background,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    marginTop: -20, // Superposición ligera sobre la imagen para efecto de tarjeta
+    paddingHorizontal: 15,
+    paddingTop: 20,
+    // Efecto de sombra sutil en la tarjeta
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
     shadowOpacity: 0.1,
     shadowRadius: 3,
     elevation: 2,
   },
-  scrollContent: {
-    paddingBottom: 20,
-  },
+  adoptButtonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: COLORS.background,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderTopWidth: 1,
+    borderTopColor: 'rgba(0,0,0,0.05)',
+    zIndex: 10,
+  }
 });

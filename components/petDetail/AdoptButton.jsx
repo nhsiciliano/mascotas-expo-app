@@ -5,21 +5,30 @@ import { COLORS } from '../../constants/colors';
 
 /**
  * Componente para el botón de adopción
+ * @param {Function} onPress - Función a ejecutar al presionar el botón
+ * @param {Boolean} loading - Indicador de carga
+ * @param {Boolean} alreadyRequested - Indicador de si ya se ha solicitado la adopción
  */
-const AdoptButton = ({ onPress, loading }) => {
+const AdoptButton = ({ onPress, loading, alreadyRequested = false }) => {
   return (
     <View style={styles.adoptButtonContainer}>
       <TouchableOpacity 
-        style={styles.adoptButton}
+        style={[styles.adoptButton, alreadyRequested && styles.alreadyRequestedButton]}
         onPress={onPress}
-        disabled={loading}
+        disabled={loading || alreadyRequested}
       >
         {loading ? (
           <ActivityIndicator color={COLORS.white} size="small" />
         ) : (
           <>
-            <FontAwesome name="paw" size={18} color={COLORS.white} />
-            <Text style={styles.adoptButtonText}>Solicitar adopción</Text>
+            <FontAwesome 
+              name={alreadyRequested ? "check-circle" : "paw"} 
+              size={18} 
+              color={COLORS.white} 
+            />
+            <Text style={styles.adoptButtonText}>
+              {alreadyRequested ? "Adopción solicitada" : "Solicitar adopción"}
+            </Text>
           </>
         )}
       </TouchableOpacity>
@@ -45,6 +54,10 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primary,
     paddingVertical: 15,
     borderRadius: 15,
+  },
+  alreadyRequestedButton: {
+    backgroundColor: '#7F8C8D', // Color gris para indicar que ya se ha solicitado
+    opacity: 0.9,
   },
   adoptButtonText: {
     fontSize: 16,

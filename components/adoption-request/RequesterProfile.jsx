@@ -33,13 +33,6 @@ export default function RequesterProfile({ profile }) {
               <Text style={styles.requesterDetailText}>{profile.location}</Text>
             </View>
           )}
-          
-          {profile.phone && (
-            <View style={styles.requesterDetail}>
-              <Ionicons name="call-outline" size={16} color={COLORS.textLight} />
-              <Text style={styles.requesterDetailText}>{profile.phone}</Text>
-            </View>
-          )}
         </View>
       </View>
       

@@ -19,10 +19,6 @@ import ChatHeader from '../components/chat/ChatHeader';
 import MessageItem from '../components/chat/MessageItem';
 import DateSeparator from '../components/chat/DateSeparator';
 import MessageInput from '../components/chat/MessageInput';
-import AdoptionActions from '../components/chat/AdoptionActions';
-import AdoptionConfirmModal from '../components/chat/AdoptionConfirmModal';
-import SuccessModal from '../components/chat/SuccessModal';
-import FinishedAdoptionModal from '../components/chat/FinishedAdoptionModal';
 
 // Hooks y utilidades
 import useChat from '../hooks/useChat';
@@ -46,20 +42,12 @@ export default function ChatScreen() {
     adoptionRequest,
     pet,
     keyboardVisible,
-    adoptionModalVisible,
-    adoptionAction,
-    processingAdoption,
-    successModalContent,
-    finishedAdoptionModalContent,
     isPetOwner,
     setNewMessage,
     setKeyboardVisible,
     flatListRef,
     sendMessage,
     scrollToBottom,
-    handleShowAdoptionModal,
-    handleConfirmAdoption,
-    setAdoptionModalVisible,
     getPetImage
   } = useChat(user, params);
 
@@ -127,11 +115,6 @@ export default function ChatScreen() {
 
   // Determinar si es un chat de adopción
   const isAdoptionChat = !!adoptionRequest;
-  
-  // Determinar si se pueden mostrar los botones de adopción
-  const showAdoptionButtons = isAdoptionChat && 
-    isPetOwner && 
-    adoptionRequest.status === 'accepted';
 
   return (
     <KeyboardAvoidingView
@@ -148,13 +131,7 @@ export default function ChatScreen() {
           adoptionRequest={adoptionRequest}
         />
         
-        {/* Botones de adopción (solo visibles para el dueño) */}
-        {showAdoptionButtons && (
-          <AdoptionActions 
-            onConcretar={() => handleShowAdoptionModal('concretar')}
-            onDesestimar={() => handleShowAdoptionModal('desestimar')}
-          />
-        )}
+        {/* Los botones de gestión de adopción se movieron a la pantalla de solicitud */}
         
         {/* Lista de mensajes */}
         <FlatList
@@ -183,24 +160,9 @@ export default function ChatScreen() {
           inputAccessoryID="chatInput"
         />
         
-        {/* Modal de confirmación para adopción */}
-        <AdoptionConfirmModal 
-          visible={adoptionModalVisible}
-          action={adoptionAction}
-          onConfirm={handleConfirmAdoption}
-          onCancel={() => setAdoptionModalVisible(false)}
-          processing={processingAdoption}
-        />
+        {/* Los modales de adopción se movieron a la pantalla de solicitud */}
         
-        {/* Modal para adopción exitosa */}
-        <SuccessModal 
-          content={successModalContent} 
-        />
-        
-        {/* Modal para adopción finalizada */}
-        <FinishedAdoptionModal 
-          content={finishedAdoptionModalContent} 
-        />
+        {/* Los modales redundantes de éxito han sido eliminados ya que usamos Alert nativo */}
       </SafeAreaView>
     </KeyboardAvoidingView>
   );

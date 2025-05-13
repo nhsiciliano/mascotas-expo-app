@@ -1,11 +1,8 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 import { router } from "expo-router";
-import * as WebBrowser from 'expo-web-browser';
-import * as Google from 'expo-auth-session/providers/google';
+import { GoogleSignin } from '@react-native-google-signin/google-signin';
 import { decode } from 'base64-arraybuffer';
-
-WebBrowser.maybeCompleteAuthSession();
 
 const AuthContext = createContext();
 
@@ -14,19 +11,24 @@ export const AuthProvider = ({ children }) => {
     const [profile, setProfile] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Configuración para Google Auth
-    const [request, response, promptAsync] = Google.useAuthRequest({
-        expoClientId: 'EXPO_CLIENT_ID', // Reemplazar con el ID de cliente de Expo
-        androidClientId: 'ANDROID_CLIENT_ID', // Reemplazar para producción
-        iosClientId: 'IOS_CLIENT_ID', // Reemplazar para producción
-        webClientId: 'WEB_CLIENT_ID', // Reemplazar para producción
-    });
-
-    // Verificar sesión al cargar
+    // Configuración para Google Sign-In al iniciar la aplicación
     useEffect(() => {
-        checkSession();
+        // Configurar Google Sign-In
+        GoogleSignin.configure({
+            // No necesitamos scopes especiales para autenticación básica
+            scopes: ['email', 'profile'],
+            // Proporcionamos tanto webClientId como iosClientId explícitamente
+            webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+            iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+            offlineAccess: true,
+        });
         
-        // Suscripción a cambios de autenticación
+        // También verificamos la sesión al cargar
+        checkSession();
+    }, []);
+    
+    // Suscripción a cambios de autenticación
+    useEffect(() => {
         const { data: authListener } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (event === 'SIGNED_IN' && session) {
                 setUser(session.user);
@@ -41,13 +43,6 @@ export const AuthProvider = ({ children }) => {
             if (authListener) authListener.subscription.unsubscribe();
         };
     }, []);
-
-    // Manejar respuesta de Google Auth
-    useEffect(() => {
-        if (response?.type === 'success') {
-            handleGoogleAuthResponse(response.authentication.accessToken);
-        }
-    }, [response]);
 
     // Verificar la sesión actual
     const checkSession = async () => {
@@ -395,34 +390,81 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    // Manejo de autenticación con Google
+    // Manejo de autenticación con Google usando Google Sign-In nativo
     const signInWithGoogle = async () => {
-        try {
-            return await promptAsync();
-        } catch (error) {
-            console.error('Error al iniciar sesión con Google:', error.message);
-            return { success: false, error: error.message };
-        }
-    };
-
-    // Manejar la respuesta de autenticación de Google
-    const handleGoogleAuthResponse = async (accessToken) => {
         try {
             setLoading(true);
             
-            // Intercambiar token de Google por sesión de Supabase
-            const { data, error } = await supabase.auth.signInWithOAuth({
+            console.log('Verificando servicios de Google Play...');
+            // Verificar que Google Play Services está disponible (solo en Android)
+            await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
+            
+            console.log('Iniciando sesión con Google...');
+            // Iniciar el flujo de autenticación de Google
+            const userInfo = await GoogleSignin.signIn();
+            console.log('Datos obtenidos de Google:', JSON.stringify(userInfo, null, 2));
+            
+            let idToken = userInfo.idToken;
+            
+            // Si no tenemos un idToken, intentamos obtenerlo explícitamente
+            if (!idToken) {
+                console.log('ID token no disponible en respuesta inicial, intentando getTokens()...');
+                try {
+                    const tokens = await GoogleSignin.getTokens();
+                    console.log('Tokens obtenidos:', JSON.stringify(tokens, null, 2));
+                    idToken = tokens.idToken;
+                } catch (tokenError) {
+                    console.error('Error al obtener tokens:', tokenError);
+                    throw new Error('No se pudo obtener el ID token de Google, incluso con getTokens()');
+                }
+            }
+            
+            // Verificar que finalmente tenemos un ID token
+            if (!idToken) {
+                throw new Error('No se pudo obtener el ID token de Google después de múltiples intentos');
+            }
+            
+            console.log('ID token obtenido correctamente, autenticando con Supabase...');
+            
+            // Usar el ID token para autenticar con Supabase
+            const { data, error } = await supabase.auth.signInWithIdToken({
                 provider: 'google',
-                accessToken,
+                token: idToken,
             });
             
-            if (error) throw error;
+            if (error) {
+                console.error('Error de Supabase al autenticar con Google:', error);
+                throw error;
+            }
             
-            // La sesión se manejará a través del listener de onAuthStateChange
+            console.log('Autenticación con Supabase exitosa');
+            
+            // Actualizar el estado del usuario
+            if (data?.user) {
+                setUser(data.user);
+                await fetchUserProfile(data.user.id);
+            }
+            
             return { success: true, data };
         } catch (error) {
-            console.error('Error al procesar autenticación con Google:', error.message);
-            return { success: false, error: error.message };
+            console.error('Error en el proceso de inicio de sesión con Google:', error);
+            
+            // Manejar errores específicos de Google Sign-In
+            if (error.code === 12501) { // SIGN_IN_CANCELLED
+                console.log('Usuario canceló el inicio de sesión');
+                return { success: false, error: 'Inicio de sesión cancelado' };
+            }
+            
+            // Si es un error de configuración o permisos
+            if (error.message && (error.message.includes('configuration') || error.message.includes('permission'))) {
+                console.error('Error de configuración o permisos:', error);
+                return { 
+                    success: false, 
+                    error: 'Error de configuración: verifica los permisos y configuraciones de Google' 
+                };
+            }
+            
+            return { success: false, error: error.message || 'Error en la autenticación con Google' };
         } finally {
             setLoading(false);
         }

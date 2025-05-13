@@ -3,6 +3,10 @@ import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
 
+// Componentes personalizados
+import AdoptionSuccessMessage from '../components/adoption-request/AdoptionSuccessMessage';
+import AdoptionCancelledMessage from '../components/adoption-request/AdoptionCancelledMessage';
+
 /**
  * Hook personalizado para manejar la lógica de solicitudes de adopción
  * @param {string} requestId - ID de la solicitud de adopción
@@ -14,6 +18,10 @@ export default function useAdoptionRequest(requestId, user) {
   const [request, setRequest] = useState(null);
   const [pet, setPet] = useState(null);
   const [requesterProfile, setRequesterProfile] = useState(null);
+  
+  // Estados para los modales personalizados
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
+  const [showCancelledMessage, setShowCancelledMessage] = useState(false);
 
   // Cargar datos de la solicitud al iniciar
   useEffect(() => {
@@ -249,7 +257,259 @@ export default function useAdoptionRequest(requestId, user) {
     }
   };
   
+  /**
+   * Muestra confirmación y maneja la concretación de una adopción
+   */
+  const handleCompleteAdoption = async () => {
+    try {
+      if (!request || !user || !pet) return;
+      
+      // Verificar que es el dueño de la mascota
+      if (request.owner_id !== user.id) {
+        Alert.alert('Error', 'Solo el dueño de la mascota puede concretar la adopción');
+        return;
+      }
+      
+      // Verificar que la solicitud está aceptada
+      if (request.status !== 'accepted') {
+        Alert.alert('Información', 'Solo se pueden concretar solicitudes que estén en estado aceptado');
+        return;
+      }
+      
+      // El mensaje de confirmación ahora lo maneja AdoptionManagementButtons
+      try {
+              setProcessing(true);
+              
+              try {
+                // 1. Actualizar estado de la solicitud
+                const { error: requestError } = await supabase
+                  .from('adoption_requests')
+                  .update({
+                    status: 'adopted',
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', request.id);
+                
+                if (requestError) throw requestError;
+                
+                // 2. Actualizar estado de la mascota
+                const { error: petError } = await supabase
+                  .from('pets')
+                  .update({
+                    status: 'adoptada',
+                    adopted_by: request.requester_id
+                  })
+                  .eq('id', pet.id);
+                
+                if (petError) {
+                  // Si falla por campos que no existen, intentamos solo con status
+                  const { error: retryPetError } = await supabase
+                    .from('pets')
+                    .update({ status: 'adoptada' })
+                    .eq('id', pet.id);
+                    
+                  if (retryPetError) throw retryPetError;
+                }
+                
+                // 3. Registrar la adopción
+                const adoptionData = {
+                  pet_id: pet.id,
+                  owner_id: request.owner_id,
+                  adopter_id: request.requester_id,
+                  user_id: user.id,
+                  created_at: new Date().toISOString(),
+                  status: 'completada'
+                };
+                
+                const { error: adoptionError } = await supabase
+                  .from('adoptions')
+                  .insert(adoptionData);
+                  
+                // 4. Crear notificación para el adoptante
+                await supabase
+                  .from('notifications')
+                  .insert({
+                    user_id: request.requester_id,
+                    type: 'adoption_completed',
+                    title: '¡Adopción finalizada!',
+                    message: `Tu proceso de adopción para ${pet.name} ha sido completado exitosamente. ¡Felicidades por tu nueva mascota!`,
+                    data: {
+                      pet_id: pet.id,
+                      pet_name: pet.name,
+                      request_id: request.id,
+                      status: 'adopted'
+                    },
+                    created_at: new Date().toISOString(),
+                    read: false
+                  });
+                  
+                // 5. Enviar mensaje automático al chat
+                const { data: chatData } = await supabase
+                  .from('chats')
+                  .select('id')
+                  .eq('adoption_request_id', request.id)
+                  .single();
+                  
+                if (chatData) {
+                  await supabase
+                    .from('chat_messages')
+                    .insert({
+                      chat_id: chatData.id,
+                      user_id: user.id,
+                      message: '¡Adopción concretada exitosamente! 🎉 La mascota ha sido marcada como adoptada. Este chat ya no estará disponible.',
+                      created_at: new Date().toISOString(),
+                      read: false,
+                      system_message: true
+                    });
+                }
+                
+                // Actualizar estado local
+                setRequest({
+                  ...request,
+                  status: 'adopted'
+                });
+                
+                // Mostrar mensaje personalizado de éxito
+                setShowSuccessMessage(true);
+                
+                // Detener el procesamiento para que se pueda cerrar el modal de confirmación
+                // Esto es importante para que el modal no se cierre automáticamente
+                setProcessing(false);
+                return; // Salimos para evitar que se ejecute el setProcessing(false) de abajo
+                
+              } catch (error) {
+                console.error('Error al concretar adopción:', error.message);
+                Alert.alert('Error', 'No se pudo concretar la adopción: ' + error.message);
+              } finally {
+                setProcessing(false);
+              }
+      } catch (error) {
+        console.error('Error al concretar adopción:', error.message);
+        Alert.alert('Error', 'No se pudo concretar la adopción: ' + error.message);
+      }
+      
+    } catch (error) {
+      console.error('Error al preparar concretación de adopción:', error.message);
+      Alert.alert('Error', 'Ocurrió un error inesperado: ' + error.message);
+    }
+  };
+
+  /**
+   * Muestra confirmación y maneja la desestimación de una adopción
+   */
+  const handleCancelAdoption = async () => {
+    try {
+      if (!request || !user || !pet) return;
+      
+      // Verificar que es el dueño de la mascota
+      if (request.owner_id !== user.id) {
+        Alert.alert('Error', 'Solo el dueño de la mascota puede desestimar la adopción');
+        return;
+      }
+      
+      // Verificar que la solicitud está aceptada
+      if (request.status !== 'accepted') {
+        Alert.alert('Información', 'Solo se pueden desestimar solicitudes que estén en estado aceptado');
+        return;
+      }
+      
+      // El mensaje de confirmación ahora lo maneja AdoptionManagementButtons
+      try {
+              setProcessing(true);
+              
+              try {
+                // 1. Actualizar estado de la solicitud
+                const { error: requestError } = await supabase
+                  .from('adoption_requests')
+                  .update({
+                    status: 'rejected',
+                    updated_at: new Date().toISOString()
+                  })
+                  .eq('id', request.id);
+                
+                if (requestError) throw requestError;
+                
+                // 2. Crear notificación para el adoptante
+                await supabase
+                  .from('notifications')
+                  .insert({
+                    user_id: request.requester_id,
+                    type: 'adoption_rejected',
+                    title: 'Proceso de adopción cancelado',
+                    message: `El proceso de adopción para ${pet.name} ha sido cancelado por el propietario.`,
+                    data: {
+                      pet_id: pet.id,
+                      pet_name: pet.name,
+                      request_id: request.id
+                    },
+                    created_at: new Date().toISOString(),
+                    read: false
+                  });
+                  
+                // 3. Enviar mensaje automático al chat
+                const { data: chatData } = await supabase
+                  .from('chats')
+                  .select('id')
+                  .eq('adoption_request_id', request.id)
+                  .single();
+                  
+                if (chatData) {
+                  await supabase
+                    .from('chat_messages')
+                    .insert({
+                      chat_id: chatData.id,
+                      user_id: user.id,
+                      message: 'Proceso de adopción desestimado. La mascota sigue disponible para adopción.',
+                      created_at: new Date().toISOString(),
+                      read: false,
+                      system_message: true
+                    });
+                }
+                
+                // Actualizar estado local
+                setRequest({
+                  ...request,
+                  status: 'rejected'
+                });
+                
+                // Mostrar mensaje personalizado de cancelación
+                setShowCancelledMessage(true);
+                
+                // Detener el procesamiento para que se pueda cerrar el modal de confirmación
+                // Esto es importante para que el modal no se cierre automáticamente
+                setProcessing(false);
+                return; // Salimos para evitar que se ejecute el setProcessing(false) de abajo
+                
+              } catch (error) {
+                console.error('Error al desestimar adopción:', error.message);
+                Alert.alert('Error', 'No se pudo desestimar la adopción: ' + error.message);
+              } finally {
+                setProcessing(false);
+              }
+      } catch (error) {
+        console.error('Error al desestimar adopción:', error.message);
+        Alert.alert('Error', 'No se pudo desestimar la adopción: ' + error.message);
+      }
+      
+    } catch (error) {
+      console.error('Error al preparar desestimación de adopción:', error.message);
+      Alert.alert('Error', 'Ocurrió un error inesperado: ' + error.message);
+    }
+  };
+  
   // Exponer todas las funcionalidades y estados necesarios
+  // Funciones para controlar los modales personalizados
+  const handleCloseSuccessMessage = () => {
+    // Navegar al inicio después de cerrar el modal
+    router.push('/(tabs)/home');
+    // Cerramos el modal después de la navegación
+    setTimeout(() => setShowSuccessMessage(false), 500);
+  };
+  
+  const handleCloseCancelledMessage = () => {
+    setShowCancelledMessage(false);
+  };
+  
   return {
     loading,
     processing,
@@ -257,8 +517,14 @@ export default function useAdoptionRequest(requestId, user) {
     pet,
     requesterProfile,
     handleResponseRequest,
+    handleCompleteAdoption,
+    handleCancelAdoption,
     getPetImage,
     getStatusBadge,
+    showSuccessMessage,
+    showCancelledMessage,
+    handleCloseSuccessMessage,
+    handleCloseCancelledMessage,
     refreshData: fetchRequestData
   };
 }

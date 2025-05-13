@@ -1,13 +1,17 @@
 import React, { useRef, useEffect } from 'react';
-import { View, Image, StyleSheet, Dimensions, Animated } from 'react-native';
+import { View, StyleSheet, Dimensions, Animated, StatusBar, Platform } from 'react-native';
 import { COLORS } from '../../constants/colors';
 
-const { width } = Dimensions.get('window');
+const { width, height } = Dimensions.get('window');
+const STATUS_BAR_HEIGHT = Platform.OS === 'ios' ? 44 : StatusBar.currentHeight || 0;
 
 /**
  * Componente para mostrar el carrusel de fotos de la mascota con transiciones suaves
+ * @param {Array} photos - Array de URLs de fotos
+ * @param {Number} currentIndex - Índice de la foto actual
+ * @param {Boolean} fullscreen - Si es true, la imagen cubrirá también el área del status bar
  */
-const PhotoCarousel = ({ photos, currentIndex }) => {
+const PhotoCarousel = ({ photos, currentIndex, fullscreen = false }) => {
   // Referencia para la animación de opacidad
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const prevIndexRef = useRef(currentIndex);
@@ -39,11 +43,16 @@ const PhotoCarousel = ({ photos, currentIndex }) => {
       {photos && photos.length > 0 ? (
         <Animated.Image 
           source={{ uri: photos[currentIndex] }} 
-          style={[styles.photo, { opacity: fadeAnim }]}
+          style={[styles.photo, { 
+            opacity: fadeAnim,
+            height: fullscreen ? 380 : 300 // Altura dinámica según el modo
+          }]}
           resizeMode="cover"
         />
       ) : (
-        <View style={[styles.photo, styles.placeholder]}>
+        <View style={[styles.photo, styles.placeholder, { 
+          height: fullscreen ? 380 : 300 // Altura dinámica según el modo
+        }]}>
           {/* Placeholder para cuando no hay imagen */}
         </View>
       )}
@@ -72,7 +81,7 @@ const styles = StyleSheet.create({
   },
   photo: {
     width,
-    height: 300,
+    height: 300, // Altura base, se sobreescribe dinámicamente
   },
   placeholder: {
     backgroundColor: COLORS.primaryLight,

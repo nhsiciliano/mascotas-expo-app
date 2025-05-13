@@ -26,7 +26,6 @@ export default function Profile() {
         profile,
         userProfile,
         editMode,
-        setEditMode,
         uploadingAvatar,
         logoutModalVisible,
         setLogoutModalVisible,
@@ -88,12 +87,6 @@ export default function Profile() {
                         <View style={styles.sectionContainer}>
                             <View style={styles.sectionHeader}>
                                 <Text style={styles.sectionTitle}>Información personal</Text>
-                                <MaterialIcons
-                                    name="edit"
-                                    size={20}
-                                    color={COLORS.primary}
-                                    onPress={() => setEditMode(true)}
-                                />
                             </View>
 
                             {/* Teléfono */}

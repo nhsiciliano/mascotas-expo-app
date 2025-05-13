@@ -14,6 +14,7 @@ export const useNotifications = () => {
   const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0); // Contador de notificaciones no leídas
 
   // Efecto para cargar notificaciones al iniciar
   useEffect(() => {
@@ -63,7 +64,12 @@ export const useNotifications = () => {
         throw error;
       }
 
-      setNotifications(data || []);
+      const notificationsData = data || [];
+      setNotifications(notificationsData);
+      
+      // Calcular el número de notificaciones no leídas
+      const unread = notificationsData.filter(notification => !notification.read).length;
+      setUnreadCount(unread);
     } catch (error) {
       console.error('Error al cargar notificaciones:', error.message);
       Alert.alert('Error', 'No se pudieron cargar las notificaciones: ' + error.message);
@@ -94,6 +100,9 @@ export const useNotifications = () => {
             : notification
         )
       );
+      
+      // Actualizar contador de no leídas
+      setUnreadCount(prev => Math.max(0, prev - 1));
     } catch (error) {
       console.error('Error al marcar como leída:', error.message);
     }
@@ -119,6 +128,9 @@ export const useNotifications = () => {
           read: true
         }))
       );
+      
+      // Resetear contador de no leídas
+      setUnreadCount(0);
     } catch (error) {
       console.error('Error:', error.message);
       Alert.alert('Error', 'No se pudieron marcar las notificaciones como leídas.');
@@ -160,6 +172,7 @@ export const useNotifications = () => {
     notifications,
     loading,
     refreshing,
+    unreadCount, // Exportar el contador de notificaciones no leídas
     fetchNotifications,
     markAsRead,
     markAllAsRead,

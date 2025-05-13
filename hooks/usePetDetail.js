@@ -16,6 +16,7 @@ export const usePetDetail = (petId) => {
   const [loadingAdoptionRequest, setLoadingAdoptionRequest] = useState(false);
   const [petData, setPetData] = useState(null);
   const [isAvailable, setIsAvailable] = useState(true); // Indicador de si la mascota está disponible
+  const [hasRequestedAdoption, setHasRequestedAdoption] = useState(false); // Indicador de si el usuario ya ha solicitado adoptar esta mascota
 
   const { user, profile } = useAuth();
 
@@ -404,10 +405,39 @@ export const usePetDetail = (petId) => {
     }
   };
 
+  // Verificar si el usuario ya ha solicitado adoptar esta mascota
+  const checkExistingRequest = async () => {
+    try {
+      if (!user || !petId) return;
+      
+      // Verificar si ya existe una solicitud de adopción pendiente o aceptada
+      const { data: existingRequests, error: checkError } = await supabase
+        .from('adoption_requests')
+        .select('id')
+        .eq('requester_id', user.id)
+        .eq('pet_id', petId)
+        .or('status.eq.pending,status.eq.accepted'); // Buscar solicitudes pendientes O aceptadas
+
+      if (checkError) {
+        console.error('Error al verificar solicitudes existentes:', checkError);
+        return;
+      }
+
+      // Actualizar el estado si ya existe una solicitud
+      setHasRequestedAdoption(existingRequests && existingRequests.length > 0);
+    } catch (error) {
+      console.error('Error al verificar solicitudes existentes:', error);
+    }
+  };
+
   // Cargar datos de la mascota al iniciar
   useEffect(() => {
     fetchPetData();
-  }, [petId]);
+    // Verificar si ya existe una solicitud
+    if (user) {
+      checkExistingRequest();
+    }
+  }, [petId, user]);
 
   return {
     petData,
@@ -418,6 +448,7 @@ export const usePetDetail = (petId) => {
     loadingInitial,
     loadingAdoptionRequest,
     isAvailable, // Incluir el estado de disponibilidad
+    hasRequestedAdoption, // Indicador de si el usuario ya ha solicitado adopción
     toggleFavorite,
     requestAdoption
   };

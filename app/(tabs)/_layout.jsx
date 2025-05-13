@@ -3,9 +3,11 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { MaterialIcons, FontAwesome5, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { COLORS } from '../../constants/colors';
+import { useNotifications } from '../../hooks/useNotifications';
+import NotificationBadge from '../../components/badges/NotificationBadge';
 
 // Create a reusable tab button component with label
-function TabButton({ label, icon, focused, onPress, ...props }) {
+function TabButton({ label, icon, focused, onPress, badgeCount, ...props }) {
   return (
     <TouchableOpacity
       {...props}
@@ -31,6 +33,7 @@ function TabButton({ label, icon, focused, onPress, ...props }) {
         }}
       >
         {icon}
+        {badgeCount > 0 && <NotificationBadge count={badgeCount} />}
       </View>
       {label && (
         <Text
@@ -92,6 +95,7 @@ function CenterButton({ onPress }) {
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const { unreadCount, markAllAsRead } = useNotifications(); // Obtener contador y función para marcar como leídas
   
   return (
     <Tabs
@@ -179,6 +183,7 @@ export default function TabsLayout() {
             <TabButton 
               focused={focused}
               label="Actividad"
+              badgeCount={unreadCount}
               icon={
                 <MaterialIcons 
                   name={focused ? "notifications" : "notifications-none"} 
@@ -186,7 +191,14 @@ export default function TabsLayout() {
                   color={focused ? COLORS.primary : COLORS.inactive} 
                 />
               }
-              onPress={() => router.push('/notifications')}
+              onPress={() => {
+                // Si hay notificaciones no leídas, marcarlas todas como leídas al hacer clic
+                if (unreadCount > 0) {
+                  markAllAsRead();
+                }
+                // Navegar a la pantalla de notificaciones
+                router.push('/notifications');
+              }}
             />
           ),
         }}

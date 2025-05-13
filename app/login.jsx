@@ -56,8 +56,15 @@ export default function SignIn() {
     // Iniciar sesión con Google
     const handleGoogleSignIn = async () => {
         setGoogleLoading(true);
-        await signInWithGoogle();
+        const { success, error } = await signInWithGoogle();
         setGoogleLoading(false);
+        
+        if (success) {
+            // Redirigir al home después de autenticación exitosa
+            router.replace('/home');
+        } else if (error) {
+            Alert.alert('Error de inicio de sesión', error || 'No se pudo iniciar sesión con Google. Inténtalo nuevamente.');
+        }
     };
     
     // Recuperar contraseña

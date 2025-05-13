@@ -21,30 +21,8 @@ export default function useChat(user, params) {
   const [adoptionRequest, setAdoptionRequest] = useState(null);
   const [pet, setPet] = useState(null);
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  const [adoptionModalVisible, setAdoptionModalVisible] = useState(false);
-  const [adoptionAction, setAdoptionAction] = useState(null); // 'concretar' o 'desestimar'
-  const [processingAdoption, setProcessingAdoption] = useState(false);
   
-  // Estado para el modal de éxito de adopción
-  const [successModalContent, setSuccessModalContent] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    petImage: null,
-    buttonText: '',
-    onButtonPress: () => {}
-  });
-  
-  // Estado para el modal de adopción finalizada
-  const [finishedAdoptionModalContent, setFinishedAdoptionModalContent] = useState({
-    visible: false,
-    title: '',
-    message: '',
-    petImage: null,
-    petName: '',
-    buttonText: '',
-    onButtonPress: () => {}
-  });
+  // Estados de adopción movidos a useAdoptionRequest
 
   const messageSubscription = useRef(null);
   const isInitialMount = useRef(true);
@@ -553,162 +531,7 @@ export default function useChat(user, params) {
     return mainImage ? mainImage.url : null;
   };
 
-  /**
-   * Muestra el modal de confirmación para concretar o desestimar adopción
-   * @param {string} action - Acción a realizar: 'concretar' o 'desestimar'
-   */
-  const handleShowAdoptionModal = (action) => {
-    setAdoptionAction(action);
-    setAdoptionModalVisible(true);
-  };
-
-  /**
-   * Procesa la confirmación de adopción (concretar o desestimar)
-   */
-  const handleConfirmAdoption = async () => {
-    try {
-      setProcessingAdoption(true);
-      
-      // Verificaciones mínimas
-      if (!adoptionRequest) {
-        throw new Error('No se encontró la solicitud de adopción');
-      }
-      if (!pet) {
-        throw new Error('No se encontró la mascota');
-      }
-      if (!user) {
-        throw new Error('No se encontró la información del usuario');
-      }
-      
-      // Determinar si es una adopción concretada o desestimada
-      const adoptionStatus = adoptionAction === 'concretar' ? 'adopted' : 'rejected';
-      
-      // Actualizar el estado de la solicitud de adopción
-      const { error: requestError } = await supabase
-        .from('adoption_requests')
-        .update({
-          status: adoptionStatus,
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', adoptionRequest.id);
-      
-      if (requestError) throw requestError;
-      
-      // Si la adopción se concretó, actualizar el estado de la mascota
-      if (adoptionAction === 'concretar') {
-        // Verificar que tengamos un requester_id válido para el adoptante
-        if (!adoptionRequest?.requester_id) {
-          throw new Error('No se pudo completar la adopción: Falta ID del solicitante');
-        }
-        
-        // 1. Actualizamos el status de la mascota en la tabla pets
-        const { error: petError } = await supabase
-          .from('pets')
-          .update({
-            status: 'adoptada',
-            adopted_by: adoptionRequest.requester_id
-          })
-          .eq('id', pet.id);
-        
-        if (petError) {
-          // Si falla por campos que no existen, intentamos solo con status
-          const { error: retryPetError } = await supabase
-            .from('pets')
-            .update({ status: 'adoptada' })
-            .eq('id', pet.id);
-            
-          if (retryPetError) throw retryPetError;
-        }
-        
-        // 2. Registramos la adopción en la tabla adoptions
-        const adoptionData = {
-          pet_id: pet.id,
-          owner_id: adoptionRequest.owner_id,
-          adopter_id: adoptionRequest.requester_id,
-          user_id: user.id,
-          created_at: new Date().toISOString(),
-          status: 'completada'
-        };
-        
-        const { error: adoptionError } = await supabase
-          .from('adoptions')
-          .insert(adoptionData);
-      }
-      
-      // Si es una adopción concretada, crear una notificación para el adoptante
-      if (adoptionAction === 'concretar') {
-        try {
-          // Crear notificación para el adoptante
-          await supabase
-            .from('notifications')
-            .insert({
-              user_id: adoptionRequest.requester_id,
-              type: 'adoption_completed',
-              title: '¡Adopción finalizada!',
-              message: `Tu proceso de adopción para ${pet.name} ha sido completado exitosamente. ¡Felicidades por tu nueva mascota!`,
-              data: {
-                pet_id: pet.id,
-                pet_name: pet.name,
-                request_id: adoptionRequest.id,
-                status: 'adopted'
-              },
-              created_at: new Date().toISOString(),
-              read: false
-            });
-        } catch (error) {
-          console.error('Error al crear notificación de adopción finalizada:', error);
-          // Continuamos aunque haya un error
-        }
-      }
-      
-      // Enviar un mensaje automático al chat
-      const messageText = adoptionAction === 'concretar' 
-        ? '¡Adopción concretada exitosamente! 🎉 La mascota ha sido marcada como adoptada. Este chat ya no estará disponible.'
-        : 'Proceso de adopción desestimado. La mascota sigue disponible para adopción.';
-      
-      await supabase
-        .from('chat_messages')
-        .insert({
-          chat_id: chat.id,
-          user_id: user.id,
-          message: messageText,
-          created_at: new Date().toISOString(),
-          read: false,
-          system_message: true
-        });
-      
-      // En lugar de un simple Alert, usamos un modal personalizado para adopción exitosa
-      if (adoptionAction === 'concretar') {
-        // Configurar el modal de éxito para adopción concretada
-        setSuccessModalContent({
-          visible: true,
-          title: '¡Adopción Exitosa! 🎉',
-          message: `¡Felicidades! La adopción de ${pet?.name || 'la mascota'} ha sido completada exitosamente. ¡Has cambiado una vida para siempre!`,
-          petImage: getPetImage(),
-          buttonText: 'Volver al inicio',
-          onButtonPress: () => {
-            setSuccessModalContent(prev => ({ ...prev, visible: false }));
-            // Redirigir al usuario a la pantalla principal
-            setTimeout(() => router.push('/(tabs)/home'), 500);
-          }
-        });
-      } else {
-        // Para adopción desestimada usamos un alert simple
-        Alert.alert(
-          'Adopción Desestimada',
-          'El proceso de adopción ha sido desestimado. La mascota sigue disponible para adopción.',
-          [{ text: 'Entendido' }]
-        );
-      }
-      
-    } catch (error) {
-      console.error('Error en proceso de adopción:', error.message);
-      Alert.alert('Error', `Ocurrió un error al procesar la adopción: ${error.message}`);
-    } finally {
-      setProcessingAdoption(false);
-      setAdoptionModalVisible(false);
-    }
-  };
+    // Funciones de gestión de adopción movidas a useAdoptionRequest
 
   // Efecto para manejar cambios de estado de la app (background/foreground)
   useEffect(() => {
@@ -737,7 +560,7 @@ export default function useChat(user, params) {
     };
   }, [chat, subscribeToMessages, loadMessages]);
   
-  // Verificar estado de Supabase Realtime cada 30 segundos y reconectar si es necesario
+  // Verificar estado de Supabase Realtime cada 3 segundos y reconectar si es necesario
   // como estaba implementado en la versión original
   useEffect(() => {
     const interval = setInterval(() => {
@@ -745,7 +568,7 @@ export default function useChat(user, params) {
         console.log('Verificación periódica: Reconectando a Supabase Realtime...');
         subscribeToMessages(chat.id);
       }
-    }, 30000); // 30 segundos igual que en el original
+    }, 3000); // 3 segundos igual que en el original
 
     return () => clearInterval(interval);
   }, [chat, subscribeToMessages]);
@@ -776,7 +599,7 @@ export default function useChat(user, params) {
       if (chat && !messageSubscription.current) {
         subscribeToMessages(chat.id);
       }
-    }, 30000);
+    }, 3000);
     
     return () => clearInterval(interval);
   }, [chat]);
@@ -792,11 +615,6 @@ export default function useChat(user, params) {
     adoptionRequest,
     pet,
     keyboardVisible,
-    adoptionModalVisible,
-    adoptionAction,
-    processingAdoption,
-    successModalContent,
-    finishedAdoptionModalContent,
     isPetOwner,
 
     // Métodos para la UI
@@ -807,9 +625,6 @@ export default function useChat(user, params) {
     // Acciones
     sendMessage,
     scrollToBottom,
-    handleShowAdoptionModal,
-    handleConfirmAdoption,
-    setAdoptionModalVisible,
     getPetImage
   };
 }

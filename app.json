@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "mascotas-app",
     "userInterfaceStyle": "automatic",
     "splash": {
       "image": "./assets/icons/splash-icon-dark.png",
@@ -20,15 +20,37 @@
         "tinted": "./assets/icons/ios-tinted.png"
       },
       "bundleIdentifier": "com.nhsiciliano.mascotasexpoapp",
+      "googleServicesFile": "./GoogleService-Info.plist",
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSLocationWhenInUseUsageDescription": "Adopción Responsable necesita acceder a tu ubicación para mostrar mascotas cercanas a ti.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Adopción Responsable necesita acceder a tu ubicación para mostrar mascotas cercanas a ti.",
+        "NSLocationAlwaysUsageDescription": "Adopción Responsable necesita acceder a tu ubicación para mostrar mascotas cercanas a ti.",
+        "UIBackgroundModes": ["remote-notification"],
+        "NSUserTrackingUsageDescription": "Adopción Responsable usa tu identificador para entregar notificaciones personalizadas sobre mascotas que podrían interesarte.",
+        "CFBundleURLTypes": [
+          {
+            "CFBundleURLSchemes": [
+              "com.googleusercontent.apps.937555269600-3nv0ghgoqpbq735jbog3rusvc2nt5fou"
+            ]
+          }
+        ]
       }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/icons/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "RECEIVE_BOOT_COMPLETED",
+        "NOTIFICATIONS",
+        "VIBRATE"
+      ],
+      "package": "com.nhsiciliano.mascotasexpoapp",
+      "googleServicesFile": "./google-services.json"
     },
     "web": {
       "bundler": "metro",
@@ -37,7 +59,17 @@
     },
     "plugins": [
       "expo-router",
-      "expo-font"
+      "expo-font",
+      "@react-native-google-signin/google-signin",
+      "expo-notifications",
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true

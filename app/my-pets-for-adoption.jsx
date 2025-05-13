@@ -99,6 +99,12 @@ export default function MyPetsForAdoption() {
           color: '#E74C3C', // Rojo apagado para indicar que ya no está disponible
           bgColor: '#FADBD8' // Fondo rojo claro
         }
+      case 'unavailable':
+        return { 
+          text: 'Pausada', 
+          color: '#F39C12', // Color naranja/ámbar para indicar estado pausado
+          bgColor: '#FEF9E7' // Fondo amarillo claro
+        }
       case 'available':
       default:
         return { 
@@ -112,27 +118,69 @@ export default function MyPetsForAdoption() {
   const handlePetPress = (petId) => {
     router.push({
       pathname: '/petDetail',
-      params: { id: petId }
+      params: { id: petId, isOwner: true }
     })
   }
 
-  const handleEditPet = (petId) => {
-    // Implementar edición de mascota
+  const togglePetAvailability = (petId, petName, currentStatus) => {
+    // Determinar si estamos habilitando o deshabilitando la disponibilidad
+    const isCurrentlyAvailable = currentStatus === 'available';
+    
+    // Configurar mensajes según la acción
+    const actionTitle = isCurrentlyAvailable ? 'Pausar adopción' : 'Reactivar adopción';
+    const actionMessage = isCurrentlyAvailable
+      ? `¿Estás seguro que quieres que ${petName} ya no esté disponible para adopción? Dejará de aparecer en el feed de adopciones disponibles.`
+      : `¿Quieres que ${petName} vuelva a estar disponible para adopción? Aparecerá nuevamente en el feed de adopciones disponibles.`;
+    const actionButtonText = isCurrentlyAvailable ? 'Pausar' : 'Reactivar';
+    const actionButtonStyle = isCurrentlyAvailable ? 'destructive' : 'default';
+    const newStatus = isCurrentlyAvailable ? 'no_disponible' : 'disponible';
+    const newUIStatus = isCurrentlyAvailable ? 'unavailable' : 'available';
+    const successMessage = isCurrentlyAvailable 
+      ? `${petName} se ha pausado del listado de adopciones.`
+      : `${petName} está disponible nuevamente para adopción.`;
+    
+    // Mostrar diálogo de confirmación con estilo acorde a la app
     Alert.alert(
-      'Editar mascota',
-      '¿Quieres modificar los datos de esta mascota?',
+      actionTitle,
+      actionMessage,
       [
         {
           text: 'Cancelar',
           style: 'cancel'
         },
         {
-          text: 'Editar',
-          onPress: () => {
-            router.push({
-              pathname: '/editPet',
-              params: { id: petId }
-            })
+          text: actionButtonText,
+          style: actionButtonStyle,
+          onPress: async () => {
+            try {
+              setLoading(true)
+              
+              // Actualizar el estado de la mascota en la base de datos
+              const { error } = await supabase
+                .from('pets')
+                .update({ 
+                  status: newStatus 
+                })
+                .eq('id', petId)
+              
+              if (error) throw error
+              
+              // Actualizar la lista local
+              setPets(prevPets => 
+                prevPets.map(pet => 
+                  pet.id === petId 
+                    ? {...pet, status: newUIStatus} 
+                    : pet
+                )
+              )
+              
+              Alert.alert('Éxito', successMessage)
+            } catch (error) {
+              console.error(`Error al ${isCurrentlyAvailable ? 'pausar' : 'reactivar'} mascota:`, error)
+              Alert.alert('Error', `No se pudo ${isCurrentlyAvailable ? 'pausar' : 'reactivar'} la mascota: ` + error.message)
+            } finally {
+              setLoading(false)
+            }
           }
         }
       ]
@@ -163,12 +211,15 @@ export default function MyPetsForAdoption() {
         <View style={styles.petInfo}>
           <View style={styles.petNameContainer}>
             <Text style={styles.petName}>{item.name}</Text>
-            
             <TouchableOpacity 
-              style={styles.editButton}
-              onPress={() => handleEditPet(item.id)}
+              style={item.status === 'available' ? styles.pauseButton : styles.activateButton}
+              onPress={() => togglePetAvailability(item.id, item.name, item.status)}
             >
-              <MaterialIcons name="edit" size={20} color={COLORS.primary} />
+              {item.status === 'available' ? (
+                <MaterialIcons name="pause-circle-outline" size={20} color={COLORS.error || '#E74C3C'} />
+              ) : (
+                <MaterialIcons name="play-circle-outline" size={20} color={COLORS.success || '#2ECC71'} />
+              )}
             </TouchableOpacity>
           </View>
           <Text style={styles.petBreed}>{item.breed || 'Sin raza especificada'}</Text>
@@ -354,6 +405,18 @@ const styles = StyleSheet.create({
   },
   editButton: {
     padding: wp(1),
+  },
+  pauseButton: {
+    padding: wp(1),
+    // Estilo para destacar acción de pausar disponibilidad
+    borderRadius: 20,
+    backgroundColor: 'rgba(231, 76, 60, 0.1)',
+  },
+  activateButton: {
+    padding: wp(1),
+    // Estilo para destacar acción de reactivar disponibilidad
+    borderRadius: 20,
+    backgroundColor: 'rgba(46, 204, 113, 0.1)',
   },
   petBreed: {
     fontSize: hp(1.8),

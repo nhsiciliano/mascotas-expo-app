@@ -19,7 +19,7 @@ export const petsService = {
           status, adopted_by, user_id,
           pet_images(url, is_main)
         `)
-        .or('status.is.null,status.neq.adoptada')  // Excluir mascotas con status="adoptada"
+        .or('status.is.null,and(status.neq.adoptada,status.neq.no_disponible)')  // Excluir mascotas con status "adoptada" o "no_disponible"
         .is('adopted_by', null);                  // Excluir mascotas que tienen adoptante
       
       // Si hay un usuario actual, excluir sus mascotas

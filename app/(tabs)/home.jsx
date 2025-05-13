@@ -46,15 +46,6 @@ export default function HomeScreen() {
   };
   
   /**
-   * Maneja el evento de cerrar sesión
-   */
-  const handleLogout = () => {
-    if (logout) {
-      logout();
-    }
-  };
-  
-  /**
    * Maneja el cambio de ubicación
    */
   const handleChangeLocation = () => {
