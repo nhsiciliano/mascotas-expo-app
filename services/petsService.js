@@ -16,7 +16,7 @@ export const petsService = {
         .select(`
           id, name, type, breed, age, gender, size, description, 
           phone, latitude, longitude, location_name, created_at,
-          status, adopted_by, user_id,
+          status, adopted_by, user_id, adoption_type, transit_days,
           pet_images(url, is_main)
         `)
         .or('status.is.null,and(status.neq.adoptada,status.neq.no_disponible)')  // Excluir mascotas con status "adoptada" o "no_disponible"
@@ -53,7 +53,7 @@ export const petsService = {
         .select(`
           id, name, type, breed, age, gender, size, description, 
           phone, latitude, longitude, location_name, created_at,
-          status, adopted_by,
+          status, adopted_by, adoption_type, transit_days,
           pet_images(url, is_main)
         `)
         .eq('id', petId)
@@ -88,7 +88,7 @@ export const petsService = {
         .select(`
           id, name, type, breed, age, gender, size, description, 
           phone, latitude, longitude, location_name, created_at,
-          status, adopted_by,
+          status, adopted_by, adoption_type, transit_days,
           pet_images(url, is_main)
         `)
         .or('status.is.null,status.neq.adoptada')

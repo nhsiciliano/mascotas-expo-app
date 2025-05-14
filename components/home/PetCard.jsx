@@ -26,6 +26,14 @@ const PetCard = ({ pet, onPress, onFavoriteToggle, isFavorite }) => {
     }
   };
 
+  // Determinar si el tipo de adopción es permanente o tránsito
+  // Si no existe el campo adoption_type, asumimos que es permanente (valor por defecto)
+  const adoptionType = pet.adoption_type || 'permanent';
+  const isTransit = adoptionType === 'transit';
+  
+  // Obtener el texto para los días de tránsito si corresponde
+  const transitDaysText = isTransit && pet.transit_days ? `(${pet.transit_days})` : '';
+
   return (
     <TouchableOpacity 
       style={styles.petCard}
@@ -50,7 +58,19 @@ const PetCard = ({ pet, onPress, onFavoriteToggle, isFavorite }) => {
       {/* Información de la mascota */}
       <View style={styles.petInfo}>
         <View style={styles.petNameContainer}>
-          <Text style={styles.petName}>{pet.name}</Text>
+          <View style={styles.nameAndTypeContainer}>
+            <Text style={styles.petName}>{pet.name}</Text>
+            
+            {/* Tipo de adopción */}
+            <View style={[styles.adoptionTypeBadge, isTransit ? styles.transitBadge : styles.permanentBadge]}>
+              <Text style={[styles.adoptionTypeText, isTransit ? styles.transitText : styles.permanentText]}>
+                {isTransit 
+                  ? `Tránsito ${transitDaysText}` 
+                  : 'Adopción permanente'}
+              </Text>
+            </View>
+          </View>
+          
           <TouchableOpacity 
             style={styles.favoriteButton}
             onPress={onFavoriteToggle}
@@ -133,6 +153,33 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 4,
+  },
+  nameAndTypeContainer: {
+    flex: 1,
+    flexDirection: 'column'
+  },
+  adoptionTypeBadge: {
+    alignSelf: 'flex-start',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    marginTop: 4,
+  },
+  permanentBadge: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  transitBadge: {
+    backgroundColor: COLORS.transitLight,
+  },
+  adoptionTypeText: {
+    fontSize: 11,
+    fontWeight: '500',
+  },
+  permanentText: {
+    color: COLORS.primary,
+  },
+  transitText: {
+    color: COLORS.transit,
   },
   petName: {
     fontSize: 18,

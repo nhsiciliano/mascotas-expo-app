@@ -5,8 +5,12 @@ import { COLORS } from '../../constants/colors';
 
 /**
  * Barra de búsqueda con botón de filtro
+ * @param {string} searchQuery - Texto de búsqueda
+ * @param {Function} onSearch - Función para actualizar el texto de búsqueda
+ * @param {Function} onFilterPress - Función para mostrar/ocultar filtros
+ * @param {boolean} filtersActive - Indica si los filtros están activos
  */
-const SearchBar = ({ searchQuery, onSearch, onFilterPress }) => {
+const SearchBar = ({ searchQuery, onSearch, onFilterPress, filtersActive = false }) => {
   return (
     <View style={styles.searchContainer}>
       <View style={styles.searchBar}>
@@ -25,8 +29,14 @@ const SearchBar = ({ searchQuery, onSearch, onFilterPress }) => {
         />
       </View>
       
-      <TouchableOpacity style={styles.filterButton} onPress={onFilterPress}>
+      <TouchableOpacity 
+        style={[styles.filterButton, filtersActive && styles.filterButtonActive]} 
+        onPress={onFilterPress}
+      >
         <MaterialIcons name="tune" size={24} color={COLORS.white} />
+        {filtersActive && (
+          <View style={styles.filterActiveDot} />
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -65,16 +75,30 @@ const styles = StyleSheet.create({
   },
   filterButton: {
     width: 40,
-    height: 40,
     backgroundColor: COLORS.primary,
-    borderRadius: 12,
+    borderRadius: 10,
+    padding: 6,
+    marginLeft: 10,
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
     shadowColor: COLORS.shadow,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 3,
     elevation: 2,
+  },
+  filterButtonActive: {
+    backgroundColor: COLORS.primaryDark,
+  },
+  filterActiveDot: {
+    position: 'absolute',
+    top: 8,
+    right: 8,
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: COLORS.white,
   },
 });
 

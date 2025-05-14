@@ -8,12 +8,19 @@ import { COLORS } from '../../constants/colors';
  * @param {Function} onPress - Función a ejecutar al presionar el botón
  * @param {Boolean} loading - Indicador de carga
  * @param {Boolean} alreadyRequested - Indicador de si ya se ha solicitado la adopción
+ * @param {Object} pet - Datos de la mascota
  */
-const AdoptButton = ({ onPress, loading, alreadyRequested = false }) => {
+const AdoptButton = ({ onPress, loading, alreadyRequested = false, pet = {} }) => {
+  // Determinar si el tipo de adopción es tránsito
+  const isTransit = pet?.adoption_type === 'transit';
   return (
     <View style={styles.adoptButtonContainer}>
       <TouchableOpacity 
-        style={[styles.adoptButton, alreadyRequested && styles.alreadyRequestedButton]}
+        style={[
+          styles.adoptButton, 
+          alreadyRequested && styles.alreadyRequestedButton,
+          isTransit && !alreadyRequested && styles.transitButton
+        ]}
         onPress={onPress}
         disabled={loading || alreadyRequested}
       >
@@ -27,7 +34,10 @@ const AdoptButton = ({ onPress, loading, alreadyRequested = false }) => {
               color={COLORS.white} 
             />
             <Text style={styles.adoptButtonText}>
-              {alreadyRequested ? "Adopción solicitada" : "Solicitar adopción"}
+              {alreadyRequested 
+                ? (isTransit ? "Tránsito solicitado" : "Adopción solicitada") 
+                : (isTransit ? "Solicitar tránsito" : "Solicitar adopción")
+              }
             </Text>
           </>
         )}
@@ -58,6 +68,9 @@ const styles = StyleSheet.create({
   alreadyRequestedButton: {
     backgroundColor: '#7F8C8D', // Color gris para indicar que ya se ha solicitado
     opacity: 0.9,
+  },
+  transitButton: {
+    backgroundColor: COLORS.transit, // Color púrpura para tránsito
   },
   adoptButtonText: {
     fontSize: 16,

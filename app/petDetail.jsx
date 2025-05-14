@@ -139,6 +139,7 @@ export default function PetDetailScreen() {
             onPress={requestAdoption}
             loading={loadingAdoptionRequest}
             alreadyRequested={hasRequestedAdoption}
+            pet={petData} // Pasamos los datos de la mascota para saber si es tránsito o permanente
           />
         </View>
       )}

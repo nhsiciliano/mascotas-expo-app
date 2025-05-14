@@ -12,6 +12,7 @@ import { favoritesService } from '../services/favoritesService';
 export const useHome = () => {
   const { user } = useAuth();
   const [selectedCategory, setSelectedCategory] = useState('1'); // "Todos" por defecto
+  const [selectedAdoptionType, setSelectedAdoptionType] = useState('all'); // 'all', 'permanent', 'transit'
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredPets, setFilteredPets] = useState([]);
   const [allPets, setAllPets] = useState([]);
@@ -37,10 +38,10 @@ export const useHome = () => {
     }
   }, [user]);
 
-  // Filtrar mascotas cuando cambia la categoría o la búsqueda
+  // Filtrar mascotas cuando cambia la categoría, tipo de adopción o la búsqueda
   useEffect(() => {
     filterPets();
-  }, [selectedCategory, searchQuery, allPets]);
+  }, [selectedCategory, selectedAdoptionType, searchQuery, allPets]);
 
   /**
    * Obtiene la ubicación actual del usuario
@@ -115,7 +116,7 @@ export const useHome = () => {
   };
 
   /**
-   * Filtra las mascotas según la categoría y búsqueda
+   * Filtra las mascotas según la categoría, tipo de adopción y búsqueda
    * @param {Array} pets - Lista de mascotas a filtrar (opcional)
    */
   const filterPets = (pets = allPets) => {
@@ -138,6 +139,14 @@ export const useHome = () => {
       filtered = filtered.filter(pet => pet.type === categoryMap[selectedCategory]);
     }
     
+    // Filtrar por tipo de adopción
+    if (selectedAdoptionType !== 'all') {
+      filtered = filtered.filter(pet => {
+        const adoptionType = pet.adoption_type || 'permanent'; // Valor por defecto si no tiene
+        return adoptionType === selectedAdoptionType;
+      });
+    }
+    
     // Filtrar por búsqueda
     if (searchQuery.trim() !== '') {
       const query = searchQuery.toLowerCase().trim();
@@ -157,6 +166,14 @@ export const useHome = () => {
    */
   const changeCategory = (categoryId) => {
     setSelectedCategory(categoryId);
+  };
+  
+  /**
+   * Cambia el tipo de adopción seleccionado
+   * @param {string} adoptionType - Tipo de adopción ('all', 'permanent', 'transit')
+   */
+  const changeAdoptionType = (adoptionType) => {
+    setSelectedAdoptionType(adoptionType);
   };
 
   /**
@@ -246,8 +263,10 @@ export const useHome = () => {
     errorMsg,
     favorites,
     selectedCategory,
+    selectedAdoptionType,
     searchQuery,
     changeCategory,
+    changeAdoptionType,
     updateSearchQuery,
     fetchPets,
     toggleFavorite,

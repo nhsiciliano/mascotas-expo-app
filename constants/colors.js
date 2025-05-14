@@ -12,4 +12,8 @@ export const COLORS = {
   textLight: '#777777',
   danger: '#e53935',
   borderLight: '#EEEEEE',
+  
+  // Colores para tipo de adopción
+  transit: '#912686', // Color principal para tránsito (púrpura)
+  transitLight: '#F5E8F4', // Color de fondo para badges de tránsito
 };

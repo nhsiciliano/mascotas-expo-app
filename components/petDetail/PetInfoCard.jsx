@@ -9,12 +9,24 @@ import { COLORS } from '../../constants/colors';
 const PetInfoCard = ({ pet }) => {
   if (!pet) return null;
 
+  // Determinar el tipo de adopción (por defecto es permanente)
+  const adoptionType = pet.adoption_type || 'permanent';
+  const isTransit = adoptionType === 'transit';
+  const transitDaysText = isTransit && pet.transit_days ? `(${pet.transit_days})` : '';
+
   return (
     <View style={styles.infoCard}>
       <View style={styles.infoHeader}>
         <View>
           <Text style={styles.petName}>{pet.name}</Text>
           <Text style={styles.petBreed}>{pet.breed}</Text>
+          
+          {/* Tipo de adopción */}
+          <View style={[styles.adoptionTypeContainer, isTransit ? styles.transitContainer : styles.permanentContainer]}>
+            <Text style={[styles.adoptionTypeText, isTransit ? styles.transitText : styles.permanentText]}>
+              {isTransit ? `Tránsito ${transitDaysText}` : 'Adopción permanente'}
+            </Text>
+          </View>
         </View>
 
         <View style={styles.ageGenderContainer}>
@@ -33,7 +45,11 @@ const PetInfoCard = ({ pet }) => {
 
       <View style={styles.locationContainer}>
         <MaterialIcons name="place" size={16} color={COLORS.textLight} />
-        <Text style={styles.locationText}>{pet.location}</Text>
+        <Text style={styles.locationText}>
+          {pet.location && pet.location.length > 35 
+            ? `${pet.location.substring(0, 35)}...` 
+            : pet.location}
+        </Text>
         {pet.distance && (
           <Text style={styles.distanceText}>{pet.distance}</Text>
         )}
@@ -98,6 +114,29 @@ const styles = StyleSheet.create({
     color: COLORS.primary,
     fontWeight: '500',
     marginLeft: 'auto',
+  },
+  adoptionTypeContainer: {
+    alignSelf: 'flex-start',
+    paddingVertical: 3,
+    paddingHorizontal: 8,
+    borderRadius: 10,
+    marginTop: 8,
+  },
+  permanentContainer: {
+    backgroundColor: COLORS.primaryLight,
+  },
+  transitContainer: {
+    backgroundColor: COLORS.transitLight,
+  },
+  adoptionTypeText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  permanentText: {
+    color: COLORS.primary,
+  },
+  transitText: {
+    color: COLORS.transit,
   },
 });
 

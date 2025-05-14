@@ -1,6 +1,6 @@
 import { View, Text, ActivityIndicator, RefreshControl, FlatList, StyleSheet } from 'react-native';
-import React from 'react';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import React, { useState } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';  
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
 
@@ -11,6 +11,7 @@ import { useHome } from '../../hooks/useHome';
 import UserHeader from '../../components/home/UserHeader';
 import SearchBar from '../../components/home/SearchBar';
 import LocationBar from '../../components/home/LocationBar';
+import AdoptionTypeFilter from '../../components/home/AdoptionTypeFilter';
 import CategoryList from '../../components/home/CategoryList';
 import PetsListHeader from '../../components/home/PetsListHeader';
 import PetCard from '../../components/home/PetCard';
@@ -21,13 +22,16 @@ import { COLORS } from '../../constants/colors';
 export default function HomeScreen() {
   const { user, profile, logout } = useAuth();
   const router = useRouter();
+  const [showFilters, setShowFilters] = useState(false); // Estado para controlar la visibilidad de los filtros
   const {
     loading,
     filteredPets,
     errorMsg,
     selectedCategory,
+    selectedAdoptionType,
     searchQuery,
     changeCategory,
+    changeAdoptionType,
     updateSearchQuery,
     toggleFavorite: handleToggleFavorite,
     isFavorite,
@@ -58,9 +62,8 @@ export default function HomeScreen() {
    * Maneja el evento de presionar el botón de filtro
    */
   const handleFilterPress = () => {
-    // Aquí podrías implementar la funcionalidad para mostrar filtros avanzados
-    // Por ejemplo, mostrar un modal con más opciones de filtrado
-    console.log('Mostrar filtros avanzados');
+    // Alternar la visibilidad de los filtros
+    setShowFilters(!showFilters);
   };
   
   /**
@@ -81,7 +84,8 @@ export default function HomeScreen() {
       <SearchBar 
         searchQuery={searchQuery} 
         onSearch={updateSearchQuery} 
-        onFilterPress={handleFilterPress} 
+        onFilterPress={handleFilterPress}
+        filtersActive={showFilters} 
       />
 
       {/* Barra de ubicación */}
@@ -91,11 +95,22 @@ export default function HomeScreen() {
         onChangeLocation={handleChangeLocation} 
       />
 
-      {/* Lista de categorías */}
-      <CategoryList 
-        selectedCategory={selectedCategory} 
-        onSelectCategory={changeCategory} 
-      />
+      {/* Sección de filtros - condicionalmente visible */}
+      {showFilters && (
+        <View style={styles.filtersContainer}>
+          {/* Filtro por tipo de adopción */}
+          <AdoptionTypeFilter
+            selectedAdoptionType={selectedAdoptionType}
+            onSelectAdoptionType={changeAdoptionType}
+          />
+
+          {/* Lista de categorías */}
+          <CategoryList 
+            selectedCategory={selectedCategory} 
+            onSelectCategory={changeCategory} 
+          />
+        </View>
+      )}
 
       {/* Encabezado de la lista de mascotas */}
       <PetsListHeader 
@@ -147,6 +162,18 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: COLORS.background,
+  },
+  filtersContainer: {
+    paddingTop: 10,
+    paddingBottom: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+    borderRadius: 10,
+    marginHorizontal: 16,
+    marginBottom: 15,
   },
   loadingContainer: {
     flex: 1,

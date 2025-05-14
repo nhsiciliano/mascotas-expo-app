@@ -26,6 +26,10 @@ export const useCreateAdoption = () => {
   const [description, setDescription] = useState('');
   const [phone, setPhone] = useState('');
   
+  // Nuevos estados para el tipo de adopción
+  const [adoptionType, setAdoptionType] = useState('permanent'); // 'permanent' o 'transit'
+  const [transitDays, setTransitDays] = useState('');
+  
   // Estado para imágenes
   const [images, setImages] = useState([]);
   const [uploadingImages, setUploadingImages] = useState(false);
@@ -319,7 +323,9 @@ export const useCreateAdoption = () => {
         phone: phone || '',
         latitude: location.latitude,
         longitude: location.longitude,
-        location_name: locationName || ''
+        location_name: locationName || '',
+        adoption_type: adoptionType, // Tipo de adopción (permanente o tránsito)
+        transit_days: adoptionType === 'transit' ? transitDays : null // Días de tránsito (solo si es tránsito)
       };
       
       console.log('Datos de la mascota a insertar:', JSON.stringify(newPet));
@@ -396,6 +402,8 @@ export const useCreateAdoption = () => {
     setImages([]);
     setLocation(null);
     setLocationName('');
+    setAdoptionType('permanent'); // Reiniciar tipo de adopción
+    setTransitDays('');
   };
   
   /**
@@ -426,6 +434,12 @@ export const useCreateAdoption = () => {
     setDescription,
     phone,
     setPhone,
+    
+    // Estados para tipo de adopción
+    adoptionType,
+    setAdoptionType,
+    transitDays,
+    setTransitDays,
     
     // Estado de imágenes
     images,

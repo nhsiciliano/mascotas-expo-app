@@ -14,6 +14,7 @@ import ImageSelector from '../../components/createAdoption/ImageSelector';
 import LocationSelector from '../../components/createAdoption/LocationSelector';
 import GenderSelector from '../../components/createAdoption/GenderSelector';
 import BasicInfoForm from '../../components/createAdoption/BasicInfoForm';
+import AdoptionTypeSelector from '../../components/createAdoption/AdoptionTypeSelector';
 
 // Hook personalizado
 import { useCreateAdoption } from '../../hooks/useCreateAdoption';
@@ -45,6 +46,12 @@ export default function CreateAdoption() {
     setDescription,
     phone,
     setPhone,
+    
+    // Estados para tipo de adopción
+    adoptionType,
+    setAdoptionType,
+    transitDays,
+    setTransitDays,
     
     // Estados de imágenes
     images,
@@ -91,6 +98,14 @@ export default function CreateAdoption() {
             pickImage={pickImage}
             takePhoto={takePhoto}
             removeImage={removeImage}
+          />
+          
+          {/* Selector de tipo de adopción (permanente o tránsito) */}
+          <AdoptionTypeSelector
+            adoptionType={adoptionType}
+            setAdoptionType={setAdoptionType}
+            transitDays={transitDays}
+            setTransitDays={setTransitDays}
           />
           
           {/* Formulario de información básica con nombre, tipo, raza, edad/tamaño */}

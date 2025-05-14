@@ -80,10 +80,14 @@ export const usePetDetail = (petId) => {
 
       setLoading(true);
 
-      // Consulta simplificada para obtener los datos de la mascota sin relaciones complejas
+      // Consulta para obtener los datos de la mascota incluyendo adoption_type y transit_days
       let { data: pet, error } = await supabase
         .from('pets')
-        .select('*')
+        .select(`
+          id, name, type, breed, age, gender, size, description,
+          phone, latitude, longitude, location_name, created_at,
+          status, adopted_by, user_id, adoption_type, transit_days
+        `)
         .eq('id', petId)
         .single();
 
@@ -167,26 +171,30 @@ export const usePetDetail = (petId) => {
         const isPetAvailable = !pet.adopted_by && pet.status !== 'adoptada';
         setIsAvailable(isPetAvailable);
 
-        // Formato final de los datos de la mascota
-        const processedPet = {
+        // Construir objeto de datos de mascota para enviar a la UI
+        const formattedPetData = {
           id: pet.id,
-          name: pet.name,
-          type: pet.type || 'No especificado',
-          breed: pet.breed || 'No especificada',
-          age: pet.age || 'No especificada',
-          gender: pet.gender || 'No especificado',
-          size: pet.size || 'No especificado',
+          name: pet.name || '',
+          type: pet.type || '',
+          breed: pet.breed || '',
+          age: pet.age || '',
+          gender: pet.gender || '',
+          size: pet.size || '',
+          description: pet.description || '',
+          location: pet.location_name || 'Ubicación no disponible',
           distance: '2.5 km', // Simulado - se podría calcular con la ubicación real
-          location: pet.location || 'Buenos Aires, Argentina',
+          photos: processedImages,
+          // Incluir info de tipo de adopción
+          adoption_type: pet.adoption_type || 'permanent',
+          transit_days: pet.transit_days || '',
+          characteristics: petCharacteristics,
           ownerName: ownerData?.full_name || pet.owner_name || 'Propietario',
           ownerAvatar: ownerData?.avatar_url || pet.owner_avatar,
-          description: pet.description || 'No hay descripción disponible',
-          photos: processedImages,
-          characteristics: petCharacteristics,
           owner_id: pet.user_id
         };
 
-        setPetData(processedPet);
+        // Asignar los datos formateados de la mascota al estado
+        setPetData(formattedPetData);
       }
 
       setLoading(false);
