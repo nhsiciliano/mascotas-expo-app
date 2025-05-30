@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { Alert, AppState } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { sendChatNotification } from '../utils/notificationService';
 
 // Configuraciones para Supabase Realtime
 const REALTIME_POSTGRES_CHANGES_LISTEN_EVENT = 'postgres_changes';
@@ -484,7 +485,41 @@ export default function useChat(user, params) {
             msg.id === tempMessage.id ? data[0] : msg
           )
         );
+        
+        // Identificar al destinatario (el otro usuario del chat)
+        const recipientId = chat.owner_id === user.id ? chat.requester_id : chat.owner_id;
+        
+        // Obtener el nombre del usuario actual para mostrarlo en la notificación
+        const { data: userData, error: userError } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', user.id)
+          .single();
+        
+        if (!userError && userData) {
+          // Preparar datos para la notificación
+          const chatData = {
+            chatId: chat.id,
+            petId: pet?.id || null,
+            senderId: user.id,
+            adoptionRequestId: chat.adoption_request_id || null
+          };
+          
+          // Enviar notificación push al destinatario
+          // No esperamos a que termine para no bloquear la UI
+          sendChatNotification(
+            recipientId,
+            userData.full_name || 'Usuario',
+            messageText,
+            chatData
+          ).catch(notifError => {
+            console.log('Error al enviar notificación push (no crítico):', notifError);
+          });
+        }
       }
+      
+      // Hacer scroll al final de la lista
+      scrollToBottom(true);
     } catch (error) {
       console.error('Error al enviar mensaje:', error.message);
       Alert.alert('Error', 'No se pudo enviar el mensaje: ' + error.message);

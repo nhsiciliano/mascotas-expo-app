@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../context/AuthContext';
+import { sendAdoptionRequestNotification } from '../utils/notificationService';
 
 /**
  * Hook personalizado para manejar la lógica de la pantalla de detalles de mascotas
@@ -394,6 +395,21 @@ export const usePetDetail = (petId) => {
               }
             }
           ]);
+          
+        // Enviar notificación push al propietario de la mascota
+        // No bloqueamos la ejecución con await para no afectar la experiencia del usuario
+        sendAdoptionRequestNotification(
+          petData.owner_id,
+          petData.name,
+          requesterName,
+          {
+            petId: petId,
+            requestId: requestId,
+            requesterId: user.id
+          }
+        ).catch(pushError => {
+          console.log('Error al enviar notificación push (no crítico):', pushError);
+        });
       } catch (notifError) {
         // Si falla la notificación, solo logueamos el error pero continuamos
         console.log('No se pudo crear notificación (tabla posiblemente no existe):', notifError);

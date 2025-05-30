@@ -4,7 +4,10 @@ import { AuthProvider } from '../context/AuthContext';
 import * as Notifications from 'expo-notifications';
 import * as Device from 'expo-device';
 import { useState, useEffect, useRef } from 'react';
+import { router } from 'expo-router';
 import { registerForPushNotificationsAsync } from '../utils/registerForPushNotificationsAsync';
+import { configureNotifications, saveUserPushToken, setupNotificationListeners } from '../utils/notificationService';
+import { supabase } from '../lib/supabase';
 
 Notifications.setNotificationHandler({
     handleNotification: async () => ({
@@ -41,62 +44,88 @@ function handleRegistrationError(errorMessage) {
 
 // Componente principal que sirve como layout y proveedor del contexto de autenticación
 export default function RootLayout() {
-    // Estados para manejar token y notificaciones
-    const [expoPushToken, setExpoPushToken] = useState('');
-    const [notification, setNotification] = useState(null);
-    
-    // Referencias para manejar notificaciones recibidas y respuestas
-    const notificationListener = useRef();
-    const responseListener = useRef();
+    // Referencias para la autenticación y suscripciones de notificaciones
+    const authStateChangedRef = useRef(null);
+    const notificationServices = useRef(null);
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-    // Configurar y registrar para notificaciones push al montar el componente
+    // Configurar las notificaciones al iniciar la app
     useEffect(() => {
-        // Solo intentar registrar para notificaciones si estamos en un dispositivo físico
-        if (Device.isDevice) {
-            // Registrarse para obtener token de notificaciones push
-            registerForPushNotificationsAsync()
-                .then(token => {
-                    if (token) {
-                        setExpoPushToken(token);
-                        console.log('Token de notificaciones registrado:', token);
+        // Configurar comportamiento de notificaciones
+        configureNotifications();
+        
+        // Escuchar cambios en la autenticación para registrar token
+        authStateChangedRef.current = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                if (event === 'SIGNED_IN' && session?.user?.id) {
+                    setIsAuthenticated(true);
+                    
+                    // Registrar token de notificaciones cuando el usuario inicia sesión
+                    try {
+                        const token = await registerForPushNotificationsAsync();
+                        if (token) {
+                            // Guardar token en Supabase para este usuario
+                            await saveUserPushToken(session.user.id);
+                            console.log('Token de notificaciones registrado para el usuario');
+                        }
+                    } catch (error) {
+                        console.error('Error al registrar notificaciones:', error);
                     }
-                })
-                .catch((error) => {
-                    console.error('Error al registrar para notificaciones:', error);
-                    // No mostramos el error al usuario ya que puede ser confuso
-                    // y las notificaciones no son críticas para la funcionalidad principal
-                });
-
-            // Configurar listeners para notificaciones
-            notificationListener.current = Notifications.addNotificationReceivedListener(notification => {
-                console.log('Notificación recibida:', notification);
-                setNotification(notification);
-            });
-
-            responseListener.current = Notifications.addNotificationResponseReceivedListener(response => {
-                console.log('Respuesta a notificación:', response);
-                // Aquí puedes manejar la navegación basada en la notificación
-                // Por ejemplo: router.push(response.notification.request.content.data.url);
-            });
-
-            // Limpiar listeners al desmontar el componente
-            return () => {
-                if (notificationListener.current) {
-                    Notifications.removeNotificationSubscription(notificationListener.current);
+                } else if (event === 'SIGNED_OUT') {
+                    setIsAuthenticated(false);
                 }
-                if (responseListener.current) {
-                    Notifications.removeNotificationSubscription(responseListener.current);
+            }
+        );
+        
+        // Función para manejar toques en notificaciones
+        const handleNotificationResponse = (response) => {
+            const data = response.notification.request.content.data;
+            console.log('Notificación tocada:', data);
+            
+            // Navegar según el tipo de notificación
+            if (data && data.type) {
+                switch (data.type) {
+                    case 'chat_message':
+                        // Navegar al chat específico
+                        if (data.chatId) {
+                            router.push({
+                                pathname: '/chat',
+                                params: { id: data.chatId }
+                            });
+                        }
+                        break;
+                        
+                    case 'adoption_request':
+                        // Navegar a la solicitud de adopción
+                        if (data.requestId) {
+                            router.push({
+                                pathname: '/adoption-request',
+                                params: { id: data.requestId }
+                            });
+                        }
+                        break;
+                        
+                    default:
+                        // Para otros tipos o si falta info, ir al inicio
+                        router.push('/(tabs)/home');
                 }
-            };
-        }
+            }
+        };
+        
+        // Configurar los listeners para notificaciones
+        notificationServices.current = setupNotificationListeners(handleNotificationResponse);
+        
+        // Limpiar suscripciones al desmontar
+        return () => {
+            if (authStateChangedRef.current) {
+                authStateChangedRef.current.unsubscribe();
+            }
+            
+            if (notificationServices.current) {
+                notificationServices.current.cleanup();
+            }
+        };
     }, []);
-    
-    // Para depuración - remover en producción
-    useEffect(() => {
-        if (expoPushToken) {
-            console.log('Token de notificaciones push:', expoPushToken);
-        }
-    }, [expoPushToken]);
 
     return (
         <AuthProvider>

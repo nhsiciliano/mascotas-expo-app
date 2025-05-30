@@ -415,7 +415,7 @@ export const AuthProvider = ({ children }) => {
                     idToken = tokens.idToken;
                 } catch (tokenError) {
                     console.error('Error al obtener tokens:', tokenError);
-                    throw new Error('No se pudo obtener el ID token de Google, incluso con getTokens()');
+                    throw new Error('No se pudo obtener el acceso al perfil de Google');
                 }
             }
             

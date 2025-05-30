@@ -1,5 +1,5 @@
-import { View, Text, ActivityIndicator, RefreshControl, FlatList, StyleSheet } from 'react-native';
-import React, { useState } from 'react';
+import { View, Text, ActivityIndicator, RefreshControl, FlatList, StyleSheet, Animated } from 'react-native';
+import React, { useState, useRef, useEffect } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';  
 import { useRouter } from 'expo-router';
 import { useAuth } from '../../context/AuthContext';
@@ -23,6 +23,43 @@ export default function HomeScreen() {
   const { user, profile, logout } = useAuth();
   const router = useRouter();
   const [showFilters, setShowFilters] = useState(false); // Estado para controlar la visibilidad de los filtros
+  
+  // Valores animados para la transición de los filtros
+  const filterHeight = useRef(new Animated.Value(0)).current;
+  const filterOpacity = useRef(new Animated.Value(0)).current;
+  
+  // Animación cuando cambia el estado de los filtros
+  useEffect(() => {
+    if (showFilters) {
+      // Animar para mostrar los filtros
+      Animated.parallel([
+        Animated.timing(filterHeight, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: false
+        }),
+        Animated.timing(filterOpacity, {
+          toValue: 1,
+          duration: 250,
+          useNativeDriver: false
+        })
+      ]).start();
+    } else {
+      // Animar para ocultar los filtros
+      Animated.parallel([
+        Animated.timing(filterHeight, {
+          toValue: 0,
+          duration: 250,
+          useNativeDriver: false
+        }),
+        Animated.timing(filterOpacity, {
+          toValue: 0,
+          duration: 200,
+          useNativeDriver: false
+        })
+      ]).start();
+    }
+  }, [showFilters]);
   const {
     loading,
     filteredPets,
@@ -68,9 +105,17 @@ export default function HomeScreen() {
   
   /**
    * Maneja el evento de presionar Ver Todos
+   * Restablece todos los filtros para mostrar todas las mascotas disponibles
    */
   const handleSeeAllPress = () => {
-    router.push('/explore');
+    // Restablecer el tipo de adopción a 'all' (Todos)
+    changeAdoptionType('all');
+    
+    // Restablecer la categoría a '1' (Todos)
+    changeCategory('1');
+    
+    // Limpiar la búsqueda
+    updateSearchQuery('');
   };
 
   return (
@@ -95,22 +140,34 @@ export default function HomeScreen() {
         onChangeLocation={handleChangeLocation} 
       />
 
-      {/* Sección de filtros - condicionalmente visible */}
-      {showFilters && (
-        <View style={styles.filtersContainer}>
-          {/* Filtro por tipo de adopción */}
-          <AdoptionTypeFilter
-            selectedAdoptionType={selectedAdoptionType}
-            onSelectAdoptionType={changeAdoptionType}
-          />
+      {/* Sección de filtros - con animación */}
+      <Animated.View style={[
+        styles.filtersContainer,
+        {
+          maxHeight: filterHeight.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 300] // Altura máxima estimada, ajustar según contenido
+          }),
+          opacity: filterOpacity,
+          overflow: 'hidden',
+          marginBottom: filterHeight.interpolate({
+            inputRange: [0, 1],
+            outputRange: [0, 15]
+          })
+        }
+      ]}>
+        {/* Filtro por tipo de adopción */}
+        <AdoptionTypeFilter
+          selectedAdoptionType={selectedAdoptionType}
+          onSelectAdoptionType={changeAdoptionType}
+        />
 
-          {/* Lista de categorías */}
-          <CategoryList 
-            selectedCategory={selectedCategory} 
-            onSelectCategory={changeCategory} 
-          />
-        </View>
-      )}
+        {/* Lista de categorías */}
+        <CategoryList 
+          selectedCategory={selectedCategory} 
+          onSelectCategory={changeCategory} 
+        />
+      </Animated.View>
 
       {/* Encabezado de la lista de mascotas */}
       <PetsListHeader 

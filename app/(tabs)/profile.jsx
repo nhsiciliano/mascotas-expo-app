@@ -139,6 +139,12 @@ export default function Profile() {
                             />
                             
                             <ProfileMenuItem
+                                icon={<MaterialIcons name="home" size={20} color={COLORS.transit} />}
+                                title="Mis mascotas en tránsito"
+                                onPress={() => router.push('/my-pets-for-transit')}
+                            />
+                            
+                            <ProfileMenuItem
                                 icon={<FontAwesome name="heart" size={18} color={COLORS.primary} />}
                                 title="Mis favoritos"
                                 onPress={() => router.push('/favorites')}

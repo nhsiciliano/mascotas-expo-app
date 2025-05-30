@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { Alert } from 'react-native';
 import { router } from 'expo-router';
 import { supabase } from '../lib/supabase';
+import { sendAdoptionRequestNotification } from '../utils/notificationService';
 
 // Componentes personalizados
 import AdoptionSuccessMessage from '../components/adoption-request/AdoptionSuccessMessage';
