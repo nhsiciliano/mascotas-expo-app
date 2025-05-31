@@ -12,12 +12,6 @@ web-build/
 .env
 .env.local
 
-GoogleService-Info.plist
-google-services.json
-
-oliver-task-firebase-adminsdk-n5vx9-f09613a6ac.json
-
-
 # macOS
 .DS_Store
 
