@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "86670975409",
+    "project_id": "oliver-task",
+    "storage_bucket": "oliver-task.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:86670975409:android:62c6f7f0e623359b875d90",
+        "android_client_info": {
+          "package_name": "com.nhsiciliano.mascotasexpoapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBccBOJI0icfWaOHLhH1aOWg7nQfGoWEno"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

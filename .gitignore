@@ -12,9 +12,6 @@ web-build/
 .env
 .env.local
 
-google-services.json
-GoogleService-Info.plist
-
 oliver-task-firebase-adminsdk-n5vx9-f09613a6ac.json
 
 
